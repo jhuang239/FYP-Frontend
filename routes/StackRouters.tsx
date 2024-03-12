@@ -3,7 +3,8 @@ import * as React from 'react';
 import SignUp from '../components/screens/SignUp';
 import Login from '../components/screens/Login';
 import WelcomePage from '../components/screens/WelcomePage';
-import Routes from './Routers';
+import UploadFile from '../components/screens/UploadFile';
+import Routers from './Routers';
 
 type StackRoutersProps = {
   UpdateUserState: (user: any) => void;
@@ -18,7 +19,7 @@ const StackRouters = ({UpdateUserState}: StackRoutersProps) => {
     <Stack.Navigator initialRouteName="WelcomePage">
       <Stack.Screen
         name="Welcome"
-        component={WelcomePage}
+        component={UploadFile}
         options={{headerShown: false}}
       />
       <Stack.Screen name="SignUp">{props => <SignUp />}</Stack.Screen>
