@@ -102,6 +102,10 @@ const Login = ({UpdateUserState}: loginProps) => {
     console.log('data', data);
     const {username, password} = data;
     if (username == '' || password == '') return;
+
+    //if os == android use 10.0.2.2
+    //if os == ios use 127.0.0.1
+
     const url = 'http://127.0.0.1:8000/auth/token';
 
     const headers: any = {

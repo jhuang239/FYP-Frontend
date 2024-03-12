@@ -176,6 +176,7 @@ const Chatbot = () => {
       };
       const response = await axios.get(url, {headers: headers});
       console.log('response123', response.data);
+      if (response.data.length == 0) return;
       setMessages(response.data[0].message);
     }
   };

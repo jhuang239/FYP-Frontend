@@ -35,7 +35,7 @@ const Routers = ({UpdateUserState}: RoutersProps) => {
         options={{
           tabBarLabel: 'Chatbot',
           tabBarIcon: ({color, size}) => (
-            <MaterialCommunityIcons name="home" color={color} size={size} />
+            <MaterialCommunityIcons name="chat" color={color} size={size} />
           ),
         }}
       />
