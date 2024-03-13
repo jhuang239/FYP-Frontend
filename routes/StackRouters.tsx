@@ -19,7 +19,7 @@ const StackRouters = ({UpdateUserState}: StackRoutersProps) => {
     <Stack.Navigator initialRouteName="WelcomePage">
       <Stack.Screen
         name="Welcome"
-        component={UploadFile}
+        component={WelcomePage}
         options={{headerShown: false}}
       />
       <Stack.Screen name="SignUp">{props => <SignUp />}</Stack.Screen>

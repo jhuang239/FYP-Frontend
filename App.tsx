@@ -3,6 +3,7 @@ import Routes from './routes/Routers';
 import * as React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import StackRouters from './routes/StackRouters';
+import UploadFile from './components/screens/UploadFile';
 
 export default function App() {
   const [userData, setUserData] = React.useState<any>(() => {
@@ -18,11 +19,12 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {userData != null ? (
+      <UploadFile />
+      {/* {userData != null ? (
         <Routes UpdateUserState={setUserData} />
       ) : (
         <StackRouters UpdateUserState={setUserData} />
-      )}
+      )} */}
     </NavigationContainer>
   );
 }

@@ -1,10 +1,14 @@
 import * as React from 'react';
 import IMAGES from '../images';
-import DocumentPicker, {
-  DocumentPickerResponse,
-} from 'react-native-document-picker';
+// import DocumentPicker, {
+//   DirectoryPickerResponse,
+//   DocumentPickerResponse,
+//   isCancel,
+//   isInProgress,
+// } from 'react-native-document-picker';
 // import { Ionicons } from "react-native-vector-icons";
 import Pdf from 'react-native-pdf';
+import RNFS from 'react-native-fs';
 
 import {
   View,
@@ -14,16 +18,135 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
+import DocumentPicker, {
+  DirectoryPickerResponse,
+  DocumentPickerResponse,
+  isCancel,
+  isInProgress,
+  types,
+} from 'react-native-document-picker';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
+const UploadFile = (props, {setUserData}) => {
+  const [result, setResult] = React.useState<
+    Array<DocumentPickerResponse> | DirectoryPickerResponse | undefined | null
+  >();
+
+  React.useEffect(() => {
+    console.log(JSON.stringify(result, null, 2));
+    if (result) {
+      RNFS.readFile(result[0].fileCopyUri, 'base64').then(data => {
+        console.log('base64', data);
+      });
+    }
+  }, [result]);
+
+  const handleError = (err: unknown) => {
+    if (isCancel(err)) {
+      console.warn('User cancelled the picker');
+    } else if (isInProgress(err)) {
+      console.warn('Picker is still in progress');
+    } else {
+      throw err;
+    }
+  };
+
+  return (
+    <View>
+      <View style={styles.container}>
+        {result && (
+          <Pdf
+            enablePaging={true}
+            trustAllCerts={false}
+            source={{
+              uri: result[0].fileCopyUri,
+              cache: true,
+            }}
+            onLoadComplete={(numberOfPages, filePath) => {
+              console.log(`Number of pages: ${numberOfPages}`);
+            }}
+            onPageChanged={(page, numberOfPages) => {
+              console.log(`Current page: ${page}`);
+            }}
+            onError={error => {
+              console.log(error);
+            }}
+            onPressLink={uri => {
+              console.log(`Link pressed: ${uri}`);
+            }}
+            style={styles.pdf}
+          />
+        )}
+        {!result && (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              DocumentPicker.pick({
+                allowMultiSelection: true,
+                type: [types.pdf],
+                copyTo: 'cachesDirectory',
+              })
+                .then(setResult)
+                .catch(handleError);
+            }}>
+            <Text style={styles.buttonText}>BROWSE FILES</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+  //     ) : (
+  //       <View style={styles.card}>
+  //         {/* <Ionicons name="cloud-upload" style={styles.uploadIcon} /> */}
+  //         <Text style={styles.title}>DRAG FILES HERE</Text>
+  //         <Text style={styles.subtitle}>
+  //           Drag and drop files here {'\n'} or browse your phone
+  //         </Text>
+  //         <TouchableOpacity
+  //           style={styles.button}
+  //           onPress={() => {
+  //             DocumentPicker.pick({
+  //               allowMultiSelection: true,
+  //               type: [DocumentPicker.types.pdf],
+  //             })
+  //               .then(setresult)
+  //               .catch(handleError);
+  //           }}>
+  //           <Text style={styles.buttonText}>BROWSE FILES</Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //     )}
+  //   </View>
+  //   <Modal
+  //     animationType="fade"
+  //     transparent={true}
+  //     visible={isErrorModalVisible}>
+  //     <View style={styles.modalContainer}>
+  //       <Text style={styles.modalText}>{error}</Text>
+  //       <TouchableOpacity
+  //         style={styles.modalButton}
+  //         onPress={() => setIsErrorModalVisible(false)}>
+  //         <Text style={styles.modalButtonText}>OK</Text>
+  //       </TouchableOpacity>
+  //     </View>
+  //   </Modal>
+  //</View>
+};
+
 const styles = StyleSheet.create({
+  pdf: {
+    flex: 1,
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+  },
   container: {
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ffedd5',
-    // flex: 1,
+    width: width,
+    height: height,
   },
   card: {
     margin: 50,
@@ -95,95 +218,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-const UploadFile = (props, {setUserData}) => {
-  const [uploadedPDF, setUploadedPDF] = React.useState<
-    DocumentPickerResponse[]
-  >([]);
-  const [error, setError] = React.useState(null);
-  const [isErrorModalVisible, setIsErrorModalVisible] = React.useState(false);
-
-  const UploadPDF = React.useCallback(async () => {
-    try {
-      const document = await DocumentPicker.pick({
-        type: [DocumentPicker.types.pdf],
-        presentationStyle: 'fullScreen',
-      });
-      console.log(document);
-
-      setUploadedPDF(document);
-    } catch (error) {
-      console.log(error);
-    }
-    // const formData = new FormData();
-    // formData.append("pdf", {
-    //   uri: document.uri,
-    //   type: "application/pdf",
-    //   name: document.name,
-    // });
-
-    // try {
-    //   const response = await fetch("http://localhost:8000/upload", {
-    //     method: "POST",
-    //     body: formData,
-    //     headers: {
-    //       "Content-Type": "multipart/form-data",
-    //     },
-    //   });
-
-    //   // Handle response
-    //   if (response.ok) {
-    //     // File uploaded successfully
-    //     console.log("PDF file uploaded successfully");
-    //   } else {
-    //     // Error occurred while uploading file
-    //     console.log("Error uploading PDF file:", response.status);
-    //   }
-    // } catch (error) {
-    //   console.log("Error uploading PDF file:", error);
-    // }
-  }, []);
-
-  return (
-    <View>
-      <View style={styles.container}>
-        {uploadedPDF.length > 0 ? (
-          <View>
-            <Pdf
-              ref="react-native-pdf"
-              enablePaging={true}
-              source={uploadedPDF[0]}
-              onLoadComplete={() => {}}
-            />
-          </View>
-        ) : (
-          <View style={styles.card}>
-            {/* <Ionicons name="cloud-upload" style={styles.uploadIcon} /> */}
-            <Text style={styles.title}>DRAG FILES HERE</Text>
-            <Text style={styles.subtitle}>
-              Drag and drop files here {'\n'} or browse your phone
-            </Text>
-            <TouchableOpacity style={styles.button} onPress={UploadPDF}>
-              <Text style={styles.buttonText}>BROWSE FILES</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isErrorModalVisible}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalText}>{error}</Text>
-          <TouchableOpacity
-            style={styles.modalButton}
-            onPress={() => setIsErrorModalVisible(false)}>
-            <Text style={styles.modalButtonText}>OK</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    </View>
-  );
-};
 
 export default UploadFile;
