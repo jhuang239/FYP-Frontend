@@ -1,9 +1,14 @@
-import {NavigationContainer} from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import Routes from './routes/Routers';
 import * as React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import StackRouters from './routes/StackRouters';
 import UploadFile from './components/screens/UploadFile';
+import FileList from './components/screens/FileList';
+import QuestionAnswer from './components/screens/QuestionAnswer';
+import NewHome from './components/screens/NewHome';
+import AuthorizedRouters from './routes/AuthorizedRouters';
+
 
 export default function App() {
   const [userData, setUserData] = React.useState<any>(() => {
@@ -19,12 +24,11 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <UploadFile />
-      {/* {userData != null ? (
-        <Routes UpdateUserState={setUserData} />
+      {userData == null ? (
+        <AuthorizedRouters UpdateUserState={setUserData} />
       ) : (
         <StackRouters UpdateUserState={setUserData} />
-      )} */}
+      )}
     </NavigationContainer>
   );
 }

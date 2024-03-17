@@ -1,4 +1,4 @@
-import {createStackNavigator} from '@react-navigation/stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import SignUp from '../components/screens/SignUp';
 import Login from '../components/screens/Login';
@@ -12,7 +12,7 @@ type StackRoutersProps = {
 
 const Stack = createStackNavigator();
 
-const StackRouters = ({UpdateUserState}: StackRoutersProps) => {
+const StackRouters = ({ UpdateUserState }: StackRoutersProps) => {
   console.log('StackRouters', UpdateUserState);
 
   return (
@@ -20,10 +20,10 @@ const StackRouters = ({UpdateUserState}: StackRoutersProps) => {
       <Stack.Screen
         name="Welcome"
         component={WelcomePage}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen name="SignUp">{props => <SignUp />}</Stack.Screen>
-      <Stack.Screen name="Login" options={{headerShown: false}}>
+      <Stack.Screen name="Login" options={{ headerShown: false }}>
         {props => <Login UpdateUserState={UpdateUserState} />}
       </Stack.Screen>
     </Stack.Navigator>

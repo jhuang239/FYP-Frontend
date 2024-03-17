@@ -134,7 +134,7 @@ const Chatbot = () => {
       ],
     };
     try {
-      const response = await axios.post(url, data, {headers: headers});
+      const response = await axios.post(url, data, { headers: headers });
       console.log('response', response.data);
       fetchData().then((data: any) => {
         console.log('chatItems', data.chatItems);
@@ -174,7 +174,7 @@ const Chatbot = () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${userinfo.token}`,
       };
-      const response = await axios.get(url, {headers: headers});
+      const response = await axios.get(url, { headers: headers });
       console.log('response123', response.data);
       if (response.data.length == 0) return;
       setMessages(response.data[0].message);
@@ -210,7 +210,7 @@ const Chatbot = () => {
     };
     console.log('data', data);
     try {
-      const response = await axios.put(url, data, {headers: headers});
+      const response = await axios.put(url, data, { headers: headers });
       console.log('response', response.data);
       setLoading(false);
     } catch (err) {
@@ -241,7 +241,7 @@ const Chatbot = () => {
 
     setMessages([...data]);
     setInputMessage('');
-    scrollViewRef.current.scrollToEnd({animated: true});
+    scrollViewRef.current.scrollToEnd({ animated: true });
 
     console.log('data', data);
     try {
@@ -258,7 +258,7 @@ const Chatbot = () => {
       });
       console.log('data', data);
       setMessages([...data]);
-      scrollViewRef.current.scrollToEnd({animated: true});
+      scrollViewRef.current.scrollToEnd({ animated: true });
       await sync_chat_history(data);
     } catch (err) {
       console.log('err', err);
@@ -280,12 +280,12 @@ const Chatbot = () => {
     };
     console.log('url', url);
     console.log('headers', headers);
-    const response = await axios.get(url, {headers: headers});
+    const response = await axios.get(url, { headers: headers });
     console.log('response', response.data);
     let temp = response.data.map((chat: any) => {
-      return {label: chat.chat_name, value: chat.chat_name, id: chat.id};
+      return { label: chat.chat_name, value: chat.chat_name, id: chat.id };
     });
-    temp.unshift({label: 'Create New Chat', value: 'create', id: 0});
+    temp.unshift({ label: 'Create New Chat', value: 'create', id: 0 });
     console.log('temp', temp);
     return {
       chatItems: temp,
@@ -324,8 +324,8 @@ const Chatbot = () => {
         }}>
         {items.length > 0 && (
           <DropDownPicker
-            containerStyle={{borderWidth: 0, width: width - 20}}
-            style={{height: 60, width: width - 20}}
+            containerStyle={{ borderWidth: 0, width: width - 20 }}
+            style={{ height: 60, width: width - 20 }}
             open={open}
             value={value}
             items={items}
@@ -342,7 +342,7 @@ const Chatbot = () => {
       <ScrollView
         ref={scrollViewRef}
         onContentSizeChange={() =>
-          scrollViewRef.current.scrollToEnd({animated: true})
+          scrollViewRef.current.scrollToEnd({ animated: true })
         }
         style={{
           zIndex: 0,
@@ -350,7 +350,7 @@ const Chatbot = () => {
           width: width - 20,
           borderRadius: 10,
         }}>
-        <View style={{padding: 10}}>
+        <View style={{ padding: 10 }}>
           {messages.length > 0 &&
             messages.map((message, index) => {
               if (message.role == 'assistant') {
@@ -359,7 +359,7 @@ const Chatbot = () => {
                     <View style={styles.icon_container}>
                       <Image
                         source={IMAGES.BOT}
-                        style={{width: 50, height: 50}}
+                        style={{ width: 50, height: 50 }}
                       />
                       <Text style={styles.icon_text}>Assistant</Text>
                     </View>
@@ -372,7 +372,7 @@ const Chatbot = () => {
                     <View style={styles.icon_container}>
                       <Image
                         source={IMAGES.USER}
-                        style={{width: 50, height: 50}}
+                        style={{ width: 50, height: 50 }}
                       />
                       <Text style={styles.icon_text}>{user.username}</Text>
                     </View>
