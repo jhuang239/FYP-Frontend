@@ -15,7 +15,10 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import IMAGES from '../images';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import AntDesignIcon from "react-native-vector-icons/AntDesign";
+
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -30,7 +33,7 @@ const width = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffedd5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -67,7 +70,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffedd5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -77,10 +80,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginBottom: 10,
     marginLeft: 0,
-    borderWidth: 1,
+    borderWidth: 0.5,
     padding: 10,
     borderRadius: 10,
     width: width * 0.8,
+    backgroundColor: "rgba(170, 183, 191, 0.4)"
   },
   send_button: {
     backgroundColor: '#00B9E8',
@@ -314,12 +318,32 @@ const Chatbot = () => {
 
   return (
     <View style={styles.container}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <TouchableOpacity style={{ margin: 10, height: height * 0.1, borderColor: "black", borderWidth: 1, borderRadius: 25, flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#8c77ed" }} onPress={() => { }}>
+          <View>
+            <MaterialCommunityIcons name="robot-happy" style={{ fontSize: 30, color: "black" }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: width * 0.35 }}>
+              <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Say Something Now</Text>
+              <AntDesignIcon name="arrowright" style={{ fontSize: 15, color: "black" }} />
+            </View>
+
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={{ margin: 10, height: height * 0.1, borderColor: "black", borderWidth: 1, borderRadius: 25, flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#9ef0c3" }} onPress={() => { }}>
+          <View>
+            <MaterialIcons name="question-answer" style={{ fontSize: 30, color: "black" }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: width * 0.35 }}>
+              <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Say Something Now</Text>
+              <AntDesignIcon name="arrowright" style={{ fontSize: 15, color: "black" }} />
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
       <View
         style={{
           alignItems: 'center',
           justifyContent: 'center',
           paddingHorizontal: 15,
-          height: height * 0.1,
           zIndex: 1000,
         }}>
         {items.length > 0 && (
@@ -346,7 +370,9 @@ const Chatbot = () => {
         }
         style={{
           zIndex: 0,
-          backgroundColor: '#00B9E8',
+          borderColor: 'black',
+          borderWidth: 0.5,
+          backgroundColor: 'rgba(170, 183, 191, 0.4)',
           width: width - 20,
           borderRadius: 10,
         }}>
@@ -396,11 +422,11 @@ const Chatbot = () => {
           {loading ? (
             <ActivityIndicator size="small" />
           ) : (
-            <Icon name="send" size={20} color="white" />
+            <MaterialCommunityIcons name="account-question" size={20} color="white" />
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </View >
   );
 };
 

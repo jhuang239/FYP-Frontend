@@ -61,7 +61,7 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
             return (
               <View
                 style={{
-                  top: Platform.OS === 'ios' ? -10 : -20,
+                  top: Platform.OS === 'ios' ? -10 : -5,
                   width: 60,
                   height: 60,
                   borderRadius: 45,

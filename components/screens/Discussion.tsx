@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, FlatList, Image }
 import React from "react";
 import IMAGES from "../images";
 import EntypoIcon from "react-native-vector-icons/Entypo";
+import { useNavigation } from '@react-navigation/native';
+
 
 
 
@@ -64,6 +66,8 @@ export default function Discussion() {
     ]
     const [data, setData] = React.useState(temp);
     const [selectedTag, setSelectedTag] = React.useState("");
+    const navigation = useNavigation();
+
 
     React.useEffect(() => {
         // Do fetch here
@@ -83,6 +87,11 @@ export default function Discussion() {
             setSelectedTag(category);
         }
     }
+
+    const goToDiscussionDetail = (details: any) => {
+        console.log("tenmpo")
+        navigation.navigate('DiscussionDetail', { details });
+    };
 
     return (
         <View style={styles.container}>
@@ -104,7 +113,7 @@ export default function Discussion() {
                     showsHorizontalScrollIndicator={false}
                     renderItem={({ item, index }) => {
                         return (
-                            <TouchableOpacity onPress={() => { setTag(item) }} style={{ height: 20, borderColor: "gray", borderWidth: 1, borderRadius: 45, marginHorizontal: 10, marginVertical: 10, backgroundColor: "white", alignItems: "center", justifyContent: "center", }}>
+                            <TouchableOpacity onPress={() => { setTag(item) }} style={{ height: 20, borderColor: "gray", borderWidth: 1, borderRadius: 45, marginHorizontal: 10, marginVertical: 10, backgroundColor: selectedTag == item ? "lightgreen" : "white", alignItems: "center", justifyContent: "center", }}>
                                 <Text style={{ fontSize: 10, color: "gray", paddingHorizontal: 6, alignItems: "center", justifyContent: "center", }}>{item}</Text>
                             </TouchableOpacity>
                         )
@@ -120,7 +129,7 @@ export default function Discussion() {
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item, index }) => {
                     return (
-                        <TouchableOpacity onPress={() => { }} style={index + 1 == data.length ? { ...styles.discussionConatiner, borderBottomWidth: 0 } : styles.discussionConatiner}>
+                        <TouchableOpacity onPress={() => { goToDiscussionDetail(item) }} style={index + 1 == data.length ? { ...styles.discussionConatiner, borderBottomWidth: 0 } : styles.discussionConatiner}>
                             <Image
                                 source={IMAGES.USER}
                                 style={{
