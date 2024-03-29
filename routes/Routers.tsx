@@ -42,7 +42,6 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
       </Tab.Screen>
       <Tab.Screen
         name="Chatbot"
-        component={Chatbot}
         options={{
           headerShown: false,
           tabBarLabel: 'Chatbot',
@@ -50,10 +49,11 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
             <MaterialCommunityIcons name="chat" color={color} size={size} />
           ),
         }}
-      />
+      >
+        {props => <Chatbot UpdateUserState={UpdateUserState} />}
+      </Tab.Screen>
       <Tab.Screen
         name="Upload"
-        component={UploadFile}
         options={{
           tabBarLabel: 'Upload File',
           headerShown: false,
@@ -74,10 +74,11 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
             )
           }
         }}
-      />
+      >
+        {props => <UploadFile UpdateUserState={UpdateUserState} />}
+      </Tab.Screen>
       <Tab.Screen
         name="Explorer"
-        component={FileList}
         options={{
           tabBarLabel: 'Explorer',
           headerShown: false,
@@ -85,10 +86,11 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
             <IoniconsIcon name="library" color={color} size={size} />
           ),
         }}
-      />
+      >
+        {props => <FileList UpdateUserState={UpdateUserState} />}
+      </Tab.Screen>
       <Tab.Screen
         name="Discussion"
-        component={Discussion}
         options={{
           tabBarLabel: 'Discussion',
           headerShown: false,
@@ -96,7 +98,9 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
             <Octicons name="comment-discussion" color={color} size={size} />
           ),
         }}
-      />
+      >
+        {props => <Discussion UpdateUserState={UpdateUserState} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 };

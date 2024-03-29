@@ -22,9 +22,10 @@ export default function App() {
     });
   });
 
+
   return (
     <NavigationContainer>
-      {userData == null ? (
+      {AsyncStorage.getItem('userData') != null ? (
         <AuthorizedRouters UpdateUserState={setUserData} />
       ) : (
         <StackRouters UpdateUserState={setUserData} />

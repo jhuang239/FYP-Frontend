@@ -1,8 +1,10 @@
 import * as React from 'react';
 import IMAGES from '../images';
 import IoniconsIcon from "react-native-vector-icons/Ionicons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Pdf from 'react-native-pdf';
 import RNFS from 'react-native-fs';
+
 
 import {
   View,
@@ -11,6 +13,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Modal,
+  SafeAreaView,
 } from 'react-native';
 import DocumentPicker, {
   DirectoryPickerResponse,
@@ -19,24 +22,41 @@ import DocumentPicker, {
   isInProgress,
   types,
 } from 'react-native-document-picker';
+import { Overlay } from 'react-native-elements';
+import { Picker } from '@react-native-picker/picker';
 
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
-const UploadFile = (props, { setUserData }) => {
+const UploadFile = (props) => {
+  const [locationStack, setLocationStack] = React.useState<string[]>([]);
+
   const [result, setResult] = React.useState<
     Array<DocumentPickerResponse> | DirectoryPickerResponse | undefined | null
   >();
+  const [directoryList, setDirectoryList] = React.useState([{ id: 0, name: "root" }]);
+
+
+
   const [message, setMessage] = React.useState("");
   const [isMessageModalVisible, setIsMessageModalVisible] = React.useState(false);
 
+  const [targetLocation, setTargetLocation] = React.useState(directoryList[directoryList.length - 1].name);
+  const [isChooseDirectoryOverlayShow, setIsChooseDirectoryOverlayShow] = React.useState(false);
+
+
+
   React.useEffect(() => {
-    console.log(JSON.stringify(result, null, 2));
+    // console.log(JSON.stringify(result, null, 2));
     if (result) {
       RNFS.readFile(result[0].fileCopyUri, 'base64')
     }
   }, [result]);
+
+  // React.useEffect(() => {
+  //   getDirectory();
+  // }, [currentDirectory]);
 
   const handleError = (err: unknown) => {
     setIsMessageModalVisible(true);
@@ -57,43 +77,113 @@ const UploadFile = (props, { setUserData }) => {
   };
 
   const handleTick = async () => {
+    setIsChooseDirectoryOverlayShow(true);
+  }
+
+
+  const pushStack = async () => {
+    const result = await getDirectory(targetLocation)
+    if (result) {
+      const newLocationStack = [...locationStack, targetLocation]
+      setLocationStack(newLocationStack)
+    }
+  }
+
+  const popStack = async () => {
+    const newLocationStack = locationStack.slice(0, -1);
+    if (newLocationStack.length > 0) {
+      await getDirectory(locationStack[locationStack.length - 1]);
+      setLocationStack(newLocationStack)
+    } else {
+      setDirectoryList([{ id: 0, name: "root" }])
+      setTargetLocation("root")
+      setLocationStack([])
+    }
+  }
+
+  const initDirectorySelect = () => {
+    setDirectoryList([{ id: 0, name: "root" }])
+    setTargetLocation("root")
+    setLocationStack([])
+  }
+
+  const getDirectory = async (location: string) => {
+    try {
+      const userinfo = await AsyncStorage.getItem('userData').then(value => {
+        if (value) {
+          return JSON.parse(value);
+        }
+      });
+      if (userinfo == null) return;
+      const response = await fetch(`http://3.26.57.153:8000/file/getFolders?parent_id=${location}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${userinfo.token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.folders.length > 0) {
+          setDirectoryList(data.folders);
+          setTargetLocation(data.folders[0].id)
+          return true
+        } else {
+          return false
+        }
+      } else {
+        // Error occurred while uploading file
+        setMessage("Error folder creation:" + response.status);
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const uploadFile = async () => {
     const formData = new FormData();
     if (result) {
-      formData.append("pdf", {
-        uri: result[0].uri,
-        type: "application/pdf",
-        name: result[0].name,
-      });
+      formData.append("file", result[0]);
+
       try {
-        const response = await fetch("http://localhost:8000/upload", {
+        const userinfo = await AsyncStorage.getItem('userData').then(value => {
+          if (value) {
+            return JSON.parse(value);
+          }
+        });
+        if (userinfo == null) return;
+        console.log("targetLocation in uplaod: " + targetLocation)
+        const response = await fetch(`http://3.26.57.153:8000/file/upload?parent_id=${targetLocation}`, {
           method: "POST",
           body: formData,
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${userinfo.token}`,
           },
         });
         // Handle response
         if (response.ok) {
           // File uploaded successfully
           setMessage("File uploaded successfully");
+          setResult(undefined);
         } else {
           // Error occurred while uploading file
-          setMessage("Error uploading PDF file:"+ response.status);
+          setMessage("Error uploading PDF file:" + response.status);
         }
       } catch (error) {
         setMessage("Error uploading PDF file:" + error);
       } finally {
+        setIsChooseDirectoryOverlayShow(false);
         setIsMessageModalVisible(true);
-        setResult(undefined);
+        initDirectorySelect();
       }
     }
-  };
+  }
+
 
   return (
     <View>
       <View style={styles.topbar}>
-        {/* <IoniconsIcon name="arrow-back" style={styles.backButton} />
-        <Text style={styles.topBarText}>File Upload</Text> */}
         {result ? (
           <View style={styles.decision}>
             <TouchableOpacity
@@ -109,7 +199,7 @@ const UploadFile = (props, { setUserData }) => {
           <View></View>
         )}
       </View>
-      <View style={styles.container}>
+      <View style={result ? { ...styles.container, height: height * 0.9 } : styles.container}>
         {result ? (
           <Pdf
             enablePaging={true}
@@ -130,7 +220,7 @@ const UploadFile = (props, { setUserData }) => {
             onPressLink={uri => {
               console.log(`Link pressed: ${uri}`);
             }}
-            style={styles.card}
+            style={styles.pdfCard}
           />
         ) : (
           <View style={styles.card}>
@@ -155,6 +245,55 @@ const UploadFile = (props, { setUserData }) => {
           </View>
         )}
       </View>
+
+      {/* Here is the overlay */}
+      <Overlay
+        isVisible={isChooseDirectoryOverlayShow}
+        onBackdropPress={() => { setIsChooseDirectoryOverlayShow(false) }}
+      >
+        <Text style={styles.ItemName}>Choose Your Directory</Text>
+        <SafeAreaView style={styles.ToolsOverlayItems}>
+          <Picker
+            style={{ width: "100%" }}
+            selectedValue={targetLocation}
+            onValueChange={(itemValue, itemIndex) =>
+              setTargetLocation(itemValue)
+            }>
+            {
+              directoryList.map((item, index) => {
+                return (
+                  <Picker.Item label={item.name} value={item.id} key={index} />
+                )
+              })
+            }
+          </Picker>
+          <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: "center", }}>
+            <TouchableOpacity style={{ margin: 2, padding: 10, borderWidth: 1, borderRadius: 5 }} onPress={() => { popStack() }}>
+              <Text>Previous</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ margin: 2, padding: 10, borderWidth: 1, borderRadius: 5 }} onPress={async () => {
+              await pushStack()
+            }}>
+              <Text>Next</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+        </SafeAreaView>
+        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: "center", }}>
+          <TouchableOpacity style={{ margin: 2, padding: 10, borderWidth: 1, borderRadius: 5 }} onPress={() => {
+            setIsChooseDirectoryOverlayShow(false);
+            initDirectorySelect();
+          }}>
+            <Text>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ margin: 2, padding: 10, borderWidth: 1, borderRadius: 5 }} onPress={() => {
+            uploadFile()
+          }}>
+            <Text>Confirm</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </Overlay>
+
+      {/* Here is the modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -173,17 +312,12 @@ const UploadFile = (props, { setUserData }) => {
 };
 
 const styles = StyleSheet.create({
-  pdf: {
-    flex: 1,
-    // width: Dimensions.get('window').width,
-    // height: Dimensions.get('window').height,
-  },
   container: {
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ffedd5',
     width: width,
-    height: height*0.95,
+    height: height
   },
   backButton: {
     marginLeft: 10,
@@ -208,7 +342,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: 'flex-end',
     flex: 1,
-  }, tick: {
+  },
+  tick: {
     margin: 10,
     fontSize: 30,
     color: "green",
@@ -220,7 +355,8 @@ const styles = StyleSheet.create({
   },
   card: {
     margin: 30,
-    marginTop: 20,
+    marginTop: 0,
+    marginBottom: 40,
     backgroundColor: 'rgba(170, 183, 191, 0.4)',
     borderWidth: 3,
     borderColor: 'gray',
@@ -229,7 +365,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: width * 0.9,
-    flex: 1,
+    height: height * 0.9,
+  },
+  pdfCard: {
+    backgroundColor: "gray",
+    borderWidth: 3,
+    borderColor: 'gray',
+    borderRadius: 10,
+    borderStyle: 'dotted',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: width * 0.9,
+    height: height * 0.8,
   },
   button: {
     margin: 10,
@@ -287,6 +434,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  ToolsOverlayItems: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    margin: 20,
+    width: width * 0.5,
+  },
+  ItemName: {
+    fontSize: 16,
+    margin: 5,
   },
 });
 

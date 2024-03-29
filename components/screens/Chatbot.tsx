@@ -9,6 +9,8 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
+  SafeAreaView,
 } from 'react-native';
 import * as React from 'react';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -18,6 +20,9 @@ import IMAGES from '../images';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
+import { Overlay } from 'react-native-elements';
+import { Picker } from '@react-native-picker/picker';
+
 
 
 const height = Dimensions.get('window').height;
@@ -93,17 +98,32 @@ const styles = StyleSheet.create({
     width: width * 0.125,
     alignItems: 'center',
   },
+  ItemName: {
+    fontSize: 16,
+    margin: 5,
+  },
+  ToolsOverlayItems: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    margin: 20,
+    width: width * 0.6,
+  },
 });
 
-const Chatbot = () => {
+const Chatbot = ({ UpdateUserState }) => {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState<any>();
   const [items, setItems] = React.useState<any>([]);
   const [messages, setMessages] = React.useState<any[]>([]);
   const [inputMessage, setInputMessage] = React.useState('');
+
   const [loading, setLoading] = React.useState(false);
   const scrollViewRef = React.useRef<any>(null);
   const [user, setUser] = React.useState<any>({});
+
+  const [newChatName, setNewChatName] = React.useState('');
+  const [isCreateChatOverlayShow, setIsCreateChatOverlayShow] = React.useState(false);
 
   const create_chat = async (chat_name: string) => {
     const userinfo = await AsyncStorage.getItem('userData').then(value => {
@@ -112,7 +132,7 @@ const Chatbot = () => {
       }
     });
     if (userinfo == null) return;
-    const url = 'http://127.0.0.1:8000/add_chat';
+    const url = 'http://3.26.57.153:8000/chat/add_chat';
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${userinfo.token}`,
@@ -160,19 +180,25 @@ const Chatbot = () => {
       }
     });
     if (userinfo == null) return;
-    if (item == 'create') {
-      Alert.prompt(
-        'Chat Name',
-        'Please enter the chat name',
-        text => {
-          create_chat(text);
-        },
-        'plain-text',
-        '',
-        'default',
-      );
+    if (item == "create") {
+      if (Platform.OS === 'ios') {
+        Alert.prompt(
+          'Chat Name',
+          'Please enter the chat name',
+          text => {
+            create_chat(text);
+          },
+          'plain-text',
+          '',
+          'default',
+        )
+      } else {
+        setIsCreateChatOverlayShow(true)
+      }
+
+
     } else {
-      const url = `http://127.0.0.1:8000/chat/${item}`;
+      const url = `http://3.26.57.153:8000/chat/chat/${item}`;
       console.log('url', url);
       const headers = {
         'Content-Type': 'application/json',
@@ -192,7 +218,7 @@ const Chatbot = () => {
       }
     });
     const id = items.filter((item: any) => item.value == value)[0].id;
-    const url = `http://127.0.0.1:8000/chat/${id}`;
+    const url = `http://3.26.57.153:8000/chat/chat/${id}`;
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${userinfo.token}`,
@@ -232,7 +258,7 @@ const Chatbot = () => {
       }
     });
     if (userinfo == null) return;
-    const url = 'http://127.0.0.1:8000/chatbot';
+    const url = 'http://3.26.57.153:8000/chatbot/chatting';
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${userinfo.token}`,
@@ -277,7 +303,7 @@ const Chatbot = () => {
       }
     });
     if (userinfo == null) return;
-    const url = `http://127.0.0.1:8000/chat/all/${userinfo.username}`;
+    const url = `http://3.26.57.153:8000/chat/chat/all/${userinfo.username}`;
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${userinfo.token}`,
@@ -346,22 +372,38 @@ const Chatbot = () => {
           paddingHorizontal: 15,
           zIndex: 1000,
         }}>
-        {items.length > 0 && (
-          <DropDownPicker
-            containerStyle={{ borderWidth: 0, width: width - 20 }}
-            style={{ height: 60, width: width - 20 }}
-            open={open}
-            value={value}
-            items={items}
-            setOpen={setOpen}
-            setValue={setValue}
-            // onChangeValue={(value) => {
-            //     handleChange(value);
-            // }}
-            theme="DARK"
-            multiple={false}
-          />
-        )}
+        {items.length > 0 ? (
+          Platform.OS == 'ios' ? (
+            <Picker
+              containerStyle={{ height: 100, borderWidth: 0, width: width - 20 }}
+              style={{ height: 60, width: width - 20 }}
+              open={open}
+              value={value}
+              items={items}
+              setOpen={setOpen}
+              setValue={setValue}
+              // onChangeValue={(value) => {
+              //     handleChange(value);
+              // }}
+              theme="DARK"
+              multiple={false}
+            />) : (
+            <Picker
+              style={{ width: width * 0.95 }}
+              selectedValue={value}
+              onValueChange={(itemValue, itemIndex) =>
+                setValue(itemValue)
+              }>
+              {
+                items.map((item, index) => {
+                  return (
+                    <Picker.Item label={item.label} value={item.value} key={index} />
+                  )
+                })
+              }
+            </Picker>
+          )
+        ) : (<></>)}
       </View>
       <ScrollView
         ref={scrollViewRef}
@@ -426,6 +468,30 @@ const Chatbot = () => {
           )}
         </TouchableOpacity>
       </View>
+      {/* Overlay area */}
+      <Overlay
+        isVisible={isCreateChatOverlayShow}
+        onBackdropPress={() => { setIsCreateChatOverlayShow(false) }}
+      >
+        <Text style={styles.ItemName}>Create Chat</Text>
+        <SafeAreaView style={styles.ToolsOverlayItems}>
+          <Text style={{ margin: 10 }}>Please enter the chat name</Text>
+          <TextInput
+            onChangeText={setNewChatName}
+            value={newChatName}
+            placeholder="Chat Name"
+            style={{ padding: 10, borderWidth: 1, borderRadius: 5, width: "100%" }}
+          />
+        </SafeAreaView>
+        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: "center", }}>
+          <TouchableOpacity style={{ margin: 2, padding: 10, borderRadius: 15 }} onPress={() => { setIsCreateChatOverlayShow(false); setNewChatName("") }}>
+            <Text style={{ color: "black", fontWeight: "bold" }}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ margin: 2, padding: 10, borderRadius: 15, backgroundColor: "green" }} onPress={() => { create_chat(newChatName); setIsCreateChatOverlayShow(false); }}>
+            <Text style={{ color: "white", fontWeight: "bold" }}>Create</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </Overlay>
     </View >
   );
 };

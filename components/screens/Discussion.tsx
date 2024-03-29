@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
 
 
 
-export default function Discussion() {
+export default function Discussion({ UpdateUserState }) {
     const temp = [
         { id: 1, topic: "EE2013 Assignment 1", category: "EE2013", date: "12/03/2021 10:00pm", lastDiscussionMessage: "Don't know how to do this" },
         { id: 2, topic: "GE2153 Assignment 2", category: "GE2153", date: "12/01/2021 10:00pm", lastDiscussionMessage: "Someone Help me?" },

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useNavigation, NavigationProp} from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import {
   Text,
   View,
@@ -11,7 +11,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import {useForm, Controller} from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import IMAGES from '../images';
 import axios from 'axios';
 import Login from './Login';
@@ -95,7 +95,7 @@ const SignUp = () => {
     handleSubmit,
     control,
     reset,
-    formState: {errors},
+    formState: { errors },
   } = useForm({
     defaultValues: {
       username: '',
@@ -119,7 +119,7 @@ const SignUp = () => {
         data.Name == '' ||
         data.Email == '' ||
         data.Phone == '',
-      data.Birthday == '')
+        data.Birthday == '')
     ) {
       Alert.alert('Please fill all the information');
       return;
@@ -129,7 +129,7 @@ const SignUp = () => {
       return;
     }
 
-    const url = 'http://127.0.0.1:8000/auth/add_user';
+    const url = 'http://3.26.57.153:8000/auth/add_user';
     const header: any = {
       'Content-Type': 'application/json',
       accept: 'application/json',
@@ -181,7 +181,7 @@ const SignUp = () => {
         <Text style={styles.label}>User Name</Text>
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.input}
               onBlur={onBlur}
@@ -190,12 +190,12 @@ const SignUp = () => {
             />
           )}
           name="username"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
         <Text style={styles.label}>Password</Text>
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               secureTextEntry={true}
               style={styles.input}
@@ -205,12 +205,12 @@ const SignUp = () => {
             />
           )}
           name="password"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
         <Text style={styles.label}>Comfirm Password</Text>
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               secureTextEntry={true}
               style={styles.input}
@@ -220,12 +220,12 @@ const SignUp = () => {
             />
           )}
           name="confirmPassword"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
         <Text style={styles.label}>Name</Text>
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.input}
               onBlur={onBlur}
@@ -234,12 +234,12 @@ const SignUp = () => {
             />
           )}
           name="Name"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
         <Text style={styles.label}>Email</Text>
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.input}
               onBlur={onBlur}
@@ -248,13 +248,13 @@ const SignUp = () => {
             />
           )}
           name="Email"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
 
         <Text style={styles.label}>Phone</Text>
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.input}
               onBlur={onBlur}
@@ -263,13 +263,13 @@ const SignUp = () => {
             />
           )}
           name="Phone"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
 
         <Text style={styles.label}>{`Birthday (DD/MM)`}</Text>
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.input}
               onBlur={onBlur}
@@ -278,10 +278,10 @@ const SignUp = () => {
             />
           )}
           name="Birthday"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
       </ScrollView>
-      <View style={{height: height * 0.1}}>
+      <View style={{ height: height * 0.1 }}>
         <View style={styles.btn_group}>
           <TouchableOpacity
             style={styles.btn_sign_up}

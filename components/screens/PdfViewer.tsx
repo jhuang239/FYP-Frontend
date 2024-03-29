@@ -2,6 +2,7 @@ import * as React from 'react';
 import IoniconsIcon from "react-native-vector-icons/Ionicons";
 import Pdf from 'react-native-pdf';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 import {
@@ -23,21 +24,38 @@ const PdfViewer = ({ route }) => {
     const { fileDetail } = route.params;
     const navigation = useNavigation();
 
-    const [result, setResult] = React.useState<
-        Array<DocumentPickerResponse> | DirectoryPickerResponse | undefined | null
-    >();
+    const [fileUrl, setFileUrl] = React.useState("");
 
+    const fetchFile = async () => {
+        try {
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
+
+            const response = await fetch(`http://3.26.57.153:8000/file/getPath?file_name=${fileDetail.oldName}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
+                },
+            });
+            // Handle response
+            if (response.ok) {
+                const result = await response.json();
+                setFileUrl(result.download_url)
+            } else {
+                // Error occurred while uploading file
+                console.log("Error fetch File:" + response.status);
+            }
+        } catch (error) {
+            console.log("Error fetch File:" + error);
+        }
+    }
 
     React.useEffect(() => {
-        console.log(fileDetail);
-        // Do fetch here
-        try {
-
-        } catch (error) {
-
-        } finally {
-
-        }
+        fetchFile();
     }, []);
 
 
@@ -60,8 +78,8 @@ const PdfViewer = ({ route }) => {
                     enablePaging={true}
                     trustAllCerts={false}
                     source={{
-                        uri: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-                        cache: true,
+                        uri: fileUrl,
+                        cache: false,
                     }}
                     onLoadComplete={(numberOfPages, filePath) => {
                         console.log(`Number of pages: ${numberOfPages}`);

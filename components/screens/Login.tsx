@@ -9,10 +9,10 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import {useForm, Controller} from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import IMAGES from '../images';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios, {AxiosHeaders} from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
@@ -85,12 +85,12 @@ type loginProps = {
   UpdateUserState: (user: any) => void;
 };
 
-const Login = ({UpdateUserState}: loginProps) => {
+const Login = ({ UpdateUserState }: loginProps) => {
   const {
     handleSubmit,
     control,
     reset,
-    formState: {errors},
+    formState: { errors },
   } = useForm({
     defaultValues: {
       username: '',
@@ -100,20 +100,23 @@ const Login = ({UpdateUserState}: loginProps) => {
 
   const onSubmit = async (data: any) => {
     console.log('data', data);
-    const {username, password} = data;
+    const { username, password } = data;
     if (username == '' || password == '') return;
 
     //if os == android use 10.0.2.2
-    //if os == ios use 127.0.0.1
+    //if os == ios use 3.26.57.153
 
-    const url = 'http://127.0.0.1:8000/auth/token';
-
+    const url = 'http://3.26.57.153:8000/auth/token';
     const headers: any = {
       'Content-Type': 'application/x-www-form-urlencoded',
       accept: 'application/json',
     };
 
     try {
+      const urlencoded = new URLSearchParams();
+      urlencoded.append("username", username);
+      urlencoded.append("password", password);
+
       const response = await axios
         .post(
           url,
@@ -159,7 +162,7 @@ const Login = ({UpdateUserState}: loginProps) => {
       <View style={styles.textInputGroup}>
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={[styles.input, errors.username && styles.inputError]}
               onChangeText={onChange}
@@ -170,7 +173,7 @@ const Login = ({UpdateUserState}: loginProps) => {
             />
           )}
           name="username"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
         {errors.username && (
           <Text style={styles.errorText}>Username is required</Text>
@@ -179,7 +182,7 @@ const Login = ({UpdateUserState}: loginProps) => {
         {/* <Text style={styles.label}>Password</Text> */}
         <Controller
           control={control}
-          render={({field: {onChange, onBlur, value}}) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               secureTextEntry
               style={[styles.input, errors.password && styles.inputError]}
@@ -191,7 +194,7 @@ const Login = ({UpdateUserState}: loginProps) => {
             />
           )}
           name="password"
-          rules={{required: true}}
+          rules={{ required: true }}
         />
         {errors.password && (
           <Text style={styles.errorText}>Password is required</Text>
