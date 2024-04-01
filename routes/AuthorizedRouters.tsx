@@ -19,6 +19,7 @@ import NewHome from '../components/screens/NewHome';
 import QuestionAnswer from '../components/screens/QuestionAnswer';
 import PdfViewer from '../components/screens/PdfViewer';
 import DiscussionDetail from '../components/screens/DiscussionDetail';
+import CreateDiscussion from '../components/screens/CreateDiscussion';
 import Routers from './Routers';
 
 
@@ -50,6 +51,11 @@ const AuthorizedRouters = ({ UpdateUserState }: RoutersProps) => {
             <Stack.Screen
                 name="DiscussionDetail"
                 component={DiscussionDetail}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="CreateDiscussion"
+                component={CreateDiscussion}
                 options={{ headerShown: false }}
             />
         </Stack.Navigator>

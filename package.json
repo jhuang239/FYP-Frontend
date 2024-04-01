@@ -26,6 +26,7 @@
     "react-native-elements": "^3.4.3",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.15.0",
+    "react-native-markdown-display": "^7.0.2",
     "react-native-pdf": "^6.7.4",
     "react-native-permissions": "^4.1.4",
     "react-native-reanimated": "~3.3.0",

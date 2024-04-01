@@ -32,15 +32,16 @@ const width = Dimensions.get('window').width;
 const UploadFile = (props) => {
   const [locationStack, setLocationStack] = React.useState<string[]>([]);
 
-  const [result, setResult] = React.useState<
-    Array<DocumentPickerResponse> | DirectoryPickerResponse | undefined | null
-  >();
+  const [results, setResult] = React.useState<
+    Array<DocumentPickerResponse>
+  >([]);
   const [directoryList, setDirectoryList] = React.useState([{ id: 0, name: "root" }]);
 
-
+  const [selectedDocIndex, setSelectedDocIndex] = React.useState(0);
 
   const [message, setMessage] = React.useState("");
   const [isMessageModalVisible, setIsMessageModalVisible] = React.useState(false);
+
 
   const [targetLocation, setTargetLocation] = React.useState(directoryList[directoryList.length - 1].name);
   const [isChooseDirectoryOverlayShow, setIsChooseDirectoryOverlayShow] = React.useState(false);
@@ -48,15 +49,13 @@ const UploadFile = (props) => {
 
 
   React.useEffect(() => {
-    // console.log(JSON.stringify(result, null, 2));
-    if (result) {
-      RNFS.readFile(result[0].fileCopyUri, 'base64')
+    console.log(JSON.stringify(results));
+    if (results.length > 0) {
+      for (var result of results) {
+        RNFS.readFile(result.fileCopyUri, 'base64')
+      }
     }
-  }, [result]);
-
-  // React.useEffect(() => {
-  //   getDirectory();
-  // }, [currentDirectory]);
+  }, [results]);
 
   const handleError = (err: unknown) => {
     setIsMessageModalVisible(true);
@@ -73,13 +72,13 @@ const UploadFile = (props) => {
   };
 
   const handleCross = () => {
-    setResult(undefined);
+    setResult([]);
+    setSelectedDocIndex(0)
   };
 
   const handleTick = async () => {
     setIsChooseDirectoryOverlayShow(true);
   }
-
 
   const pushStack = async () => {
     const result = await getDirectory(targetLocation)
@@ -142,8 +141,10 @@ const UploadFile = (props) => {
 
   const uploadFile = async () => {
     const formData = new FormData();
-    if (result) {
-      formData.append("file", result[0]);
+    if (results.length > 0) {
+      for (var result of results) {
+        formData.append("files", result, result.name);
+      }
 
       try {
         const userinfo = await AsyncStorage.getItem('userData').then(value => {
@@ -165,7 +166,7 @@ const UploadFile = (props) => {
         if (response.ok) {
           // File uploaded successfully
           setMessage("File uploaded successfully");
-          setResult(undefined);
+          setResult([]);
         } else {
           // Error occurred while uploading file
           setMessage("Error uploading PDF file:" + response.status);
@@ -183,29 +184,47 @@ const UploadFile = (props) => {
 
   return (
     <View>
-      <View style={styles.topbar}>
-        {result ? (
-          <View style={styles.decision}>
-            <TouchableOpacity
-              onPress={() => handleTick()}>
-              <Text style={styles.tick}>✓</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleCross()}>
-              <Text style={styles.cross}>✖</Text>
-            </TouchableOpacity>
+      <View>
+        {results.length > 0 ? (
+          <View style={styles.topbar}>
+            <View style={styles.picker}>
+              <Picker
+                style={{ width: width * 0.5 }}
+                selectedValue={selectedDocIndex}
+                onValueChange={(itemValue, itemIndex) =>
+                  setSelectedDocIndex(itemIndex)
+                }>
+                {
+                  results.map((item, index) => {
+                    return (
+                      <Picker.Item label={item.name} value={item.name} key={index} />
+                    )
+                  })
+                }
+              </Picker>
+            </View>
+            <View style={styles.decision}>
+              <TouchableOpacity
+                onPress={() => handleTick()}>
+                <Text style={styles.tick}>✓</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleCross()}>
+                <Text style={styles.cross}>✖</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <View></View>
         )}
       </View>
-      <View style={result ? { ...styles.container, height: height * 0.9 } : styles.container}>
-        {result ? (
+      <View style={results.length > 0 ? { ...styles.container, height: height * 0.9 } : styles.container}>
+        {results.length > 0 ? (
           <Pdf
             enablePaging={true}
             trustAllCerts={false}
             source={{
-              uri: result[0].fileCopyUri,
+              uri: results[selectedDocIndex].fileCopyUri,
               cache: true,
             }}
             onLoadComplete={(numberOfPages, filePath) => {
@@ -335,6 +354,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: "black",
     marginLeft: 15,
+  },
+  picker: {
+    marginLeft: 20,
+    alignItems: "center",
+    justifyContent: 'flex-start',
   },
   decision: {
     marginRight: 10,

@@ -2,11 +2,9 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, FlatList, Image }
 import React from "react";
 import IMAGES from "../images";
 import EntypoIcon from "react-native-vector-icons/Entypo";
-import { useNavigation } from '@react-navigation/native';
-
-
-
-
+import { SearchBar } from "react-native-elements";
+import { useNavigation, useIsFocused } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -52,33 +50,125 @@ const styles = StyleSheet.create({
     }
 })
 
-
-
 export default function Discussion({ UpdateUserState }) {
-    const temp = [
-        { id: 1, topic: "EE2013 Assignment 1", category: "EE2013", date: "12/03/2021 10:00pm", lastDiscussionMessage: "Don't know how to do this" },
-        { id: 2, topic: "GE2153 Assignment 2", category: "GE2153", date: "12/01/2021 10:00pm", lastDiscussionMessage: "Someone Help me?" },
-        { id: 3, topic: "CS3426 Mid-term Revision Group", category: "CS3426", date: "12/02/2021 10:00pm", lastDiscussionMessage: "Anyone got hints?" },
-        { id: 4, topic: "FYP dead line figther", category: "FYP", date: "12/02/2021 10:00pm", lastDiscussionMessage: "almost finished, HAHA" },
-        { id: 5, topic: "PartTime Post", category: "OTHER", date: "12/02/2021 10:00pm", lastDiscussionMessage: "You poor guy" },
-        { id: 6, topic: "EE2013 Assignment 1", category: "EE2013", date: "12/02/2021 10:00pm", lastDiscussionMessage: ":(" },
-        { id: 7, topic: "EE2013 Assignment 1", category: "EE2016", date: "12/02/2021 10:00pm", lastDiscussionMessage: ":(" },
-    ]
-    const [data, setData] = React.useState(temp);
+    const isFocused = useIsFocused();
+
+    const [data, setData] = React.useState<Array<{ id: string, author: string, banner_img: { file_name: string, link: string }, category: string, created_at: string, topic: string }>>([]);
     const [selectedTag, setSelectedTag] = React.useState("");
+
+    // Search function
+    const [SearchKeyword, setSearchKeyword] = React.useState("");
+    const [isSearchLoading, setIsSearchLoading] = React.useState(false);
+
     const navigation = useNavigation();
 
 
-    React.useEffect(() => {
-        // Do fetch here
+    const fetchAllDiscussions = async () => {
         try {
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
 
+            const response = await fetch(`http://3.26.57.153:8000/discussion/get_all_discussions`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
+                },
+            });
+            // Handle response
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data)
+                setData(data)
+            }
         } catch (error) {
-
-        } finally {
-
+            console.log("Error fetchAllDiscussions:" + error);
         }
-    }, []);
+    }
+
+    const fetchDiscussionsByCategory = async () => {
+        try {
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
+
+            const response = await fetch(`http://3.26.57.153:8000/discussion/get_discussion_by_category?category=${selectedTag}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
+                },
+            });
+            // Handle response
+            if (response.ok) {
+                const data = await response.json();
+                setData(data)
+            }
+        } catch (error) {
+            console.log("Error fetchDiscussionsByCategory:" + error);
+        }
+    }
+
+    const fetchDiscussionsByTopic = async () => {
+        try {
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
+
+            const response = await fetch(`http://3.26.57.153:8000/discussion/get_discussion_by_topic?topic=${SearchKeyword}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
+                },
+            });
+            // Handle response
+            if (response.ok) {
+                const data = await response.json();
+                if (!data.error) {
+                    setData(data)
+                } else {
+                    setData([])
+                }
+            }
+        } catch (error) {
+            console.log("Error fetchDiscussionsByTopic:" + error);
+        }
+    }
+
+    React.useEffect(() => {
+        setIsSearchLoading(true)
+        if (selectedTag != "") {
+            fetchDiscussionsByCategory()
+        } else {
+            fetchAllDiscussions();
+        }
+        setIsSearchLoading(false)
+    }, [selectedTag]);
+
+    React.useEffect(() => {
+        if (isFocused) {
+            console.log("Do fetch here")
+            fetchAllDiscussions();
+        }
+    }, [isFocused]);
+
+    React.useEffect(() => {
+        setIsSearchLoading(true)
+        if (SearchKeyword != "") {
+            fetchDiscussionsByTopic()
+        } else {
+            fetchAllDiscussions();
+        }
+        setIsSearchLoading(false)
+    }, [SearchKeyword]);
 
     const setTag = (category: string) => {
         if (category == selectedTag) {
@@ -89,20 +179,39 @@ export default function Discussion({ UpdateUserState }) {
     }
 
     const goToDiscussionDetail = (details: any) => {
-        console.log("tenmpo")
         navigation.navigate('DiscussionDetail', { details });
+    };
+
+    const goToCreateDiscussion = () => {
+        navigation.navigate('CreateDiscussion');
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.topBar}>
                 <Text style={styles.title}>Recent Discussion</Text>
-                <TouchableOpacity style={styles.createDiscussionContainer} onPress={() => { }}>
+                <TouchableOpacity style={styles.createDiscussionContainer} onPress={() => { goToCreateDiscussion() }}>
                     <Text style={{ fontSize: 13 }}>Say Something Now</Text>
                     <EntypoIcon style={{ fontSize: 13 }} name="arrow-bold-right" />
                 </TouchableOpacity>
             </View>
             <View>
+                <SearchBar
+                    containerStyle={{
+                        padding: 20,
+                        paddingRight: 10,
+                        justifyContent: "flex-start",
+                        alignItems: "flex-start",
+                        width: width,
+                        backgroundColor: "#ffedd5",
+                    }}
+                    placeholder="Type Here..."
+                    onChangeText={setSearchKeyword}
+                    value={SearchKeyword}
+                    lightTheme={true}
+                    round={true}
+                    showLoading={isSearchLoading}
+                />
                 <FlatList
                     data={data.filter((item, index, self) => {
                         return self.findIndex((t) => t.category === item.category) === index;
@@ -131,12 +240,15 @@ export default function Discussion({ UpdateUserState }) {
                     return (
                         <TouchableOpacity onPress={() => { goToDiscussionDetail(item) }} style={index + 1 == data.length ? { ...styles.discussionConatiner, borderBottomWidth: 0 } : styles.discussionConatiner}>
                             <Image
-                                source={IMAGES.USER}
+                                source={{
+                                    uri: item.banner_img.link
+                                }}
                                 style={{
-                                    height: 50,
-                                    width: 50,
+                                    height: 70,
+                                    width: 70,
                                     aspectRatio: 1,
-                                    borderRadius: 25
+                                    justifyContent: "center",
+                                    alignItems: "center",
                                 }}
                             />
                             <View
@@ -151,10 +263,17 @@ export default function Discussion({ UpdateUserState }) {
                                     <Text style={{ fontSize: 17, fontWeight: 'bold', color: "black" }}>{item.topic}</Text>
                                     <Text style={{ fontSize: 10, color: "gray", paddingHorizontal: 6, alignItems: "center", justifyContent: "center", }}>{item.category}</Text>
                                 </View>
-                                <Text style={{ fontSize: 15, color: "gray", marginBottom: 10 }}>{item.date}</Text>
-                                <Text style={{ fontSize: 15, color: "gray" }}>
-                                    {item.lastDiscussionMessage}
+                                <Text style={{ fontSize: 15, color: "gray", marginBottom: 10 }}>
+                                    {`Author \t -- \t ${item.author}`}
                                 </Text>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'flex-end',
+                                }}>
+                                    <Text style={{ fontSize: 15, color: "gray", }}>
+                                        {new Date(item.created_at).toLocaleString()}
+                                    </Text>
+                                </View>
                             </View>
                         </TouchableOpacity>
                     )

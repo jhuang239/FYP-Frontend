@@ -72,39 +72,6 @@ const styles = StyleSheet.create({
     }
 })
 
-const data = [
-    {
-        id: 1,
-        subject: "MA1200",
-        releaseTime: "01/03/2024",
-        isfinished: true,
-    },
-    {
-        id: 2,
-        subject: "EE4021",
-        releaseTime: "08/03/2024",
-        isfinished: true,
-    },
-    {
-        id: 3,
-        subject: "MA1201",
-        releaseTime: "10/03/2024",
-        isfinished: true,
-    },
-    {
-        id: 4,
-        subject: "EE3012",
-        releaseTime: "13/03/2024",
-        isfinished: false,
-    },
-    {
-        id: 5,
-        subject: "GE2547",
-        releaseTime: "17/3/2024",
-        isfinished: false,
-    },
-]
-
 const images = [IMAGES.PAGE1, IMAGES.PAGE2, IMAGES.PAGE3]
 
 
@@ -113,6 +80,7 @@ type HomeProps = {
 };
 
 export default function NewHome({ UpdateUserState }) {
+    const [items, setItems] = React.useState([]);
     const navigation = useNavigation();
     const isFocused = useIsFocused();
 
@@ -120,6 +88,7 @@ export default function NewHome({ UpdateUserState }) {
         if (isFocused) {
             // Do fetch here
             console.log('Do fetch here');
+            getAllQuiz();
         }
     }, [isFocused]);
 
@@ -136,6 +105,37 @@ export default function NewHome({ UpdateUserState }) {
             console.log(e);
         }
     };
+
+    const getAllQuiz = async () => {
+        try {
+
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
+
+            var response = await fetch(`http://3.26.57.153:8000/quiz/get_all_quiz`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
+                },
+            });
+
+            // Handle response
+            if (response.ok) {
+                const datas = await response.json();
+                for (var data of datas) {
+                    data.releaseTime = data.created_at.split('T')[0];
+                }
+                console.log(datas)
+                setItems(datas)
+            }
+        } catch (error) {
+            console.log("Error send request:" + error);
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -177,7 +177,7 @@ export default function NewHome({ UpdateUserState }) {
             <View>
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionHeading}>Recent Exercise</Text>
-                    <TouchableOpacity style={styles.logoutButton}>
+                    <TouchableOpacity style={styles.logoutButton} onPress={() => { navigation.navigate("Explorer") }}>
                         <Text>Request for more</Text>
                     </TouchableOpacity>
                 </View>
@@ -187,15 +187,15 @@ export default function NewHome({ UpdateUserState }) {
                     height: height * 0.48,
                 }}>
                     <FlatList
-                        data={data}
+                        data={items}
                         numColumns={2}
-                        keyExtractor={(item) => item.id + ""}
+                        keyExtractor={(item) => item.quiz_id}
                         showsVerticalScrollIndicator={false}
                         columnWrapperStyle={{ justifyContent: 'flex-start' }}
                         style={styles.flatList}
                         renderItem={({ item }) => {
                             return (
-                                <TouchableOpacity disabled={item.isfinished} onPress={() => goToQuestionAnswerPage(item)} style={{
+                                <TouchableOpacity onPress={() => goToQuestionAnswerPage(item)} style={{
                                     backgroundColor: "lightgray",
                                     height: height * 0.15,
                                     width: width * 0.42,
@@ -208,13 +208,14 @@ export default function NewHome({ UpdateUserState }) {
                                     <View style={{
                                         flex: 1,
                                         alignItems: 'center',
-                                        justifyContent: 'center',
+                                        justifyContent: 'space-evenly',
+
                                     }}>
                                         <IoniconsIcon
-                                            name={item.isfinished ? "checkmark-done" : "document"}
+                                            name={item.completed ? "checkmark-done" : "document"}
                                             style={styles.exerciseIcon}
                                         />
-                                        <Text>{item.subject}</Text>
+                                        <Text>{item.quiz_name}</Text>
                                         <Text>{item.releaseTime}</Text>
                                     </View>
                                 </TouchableOpacity>

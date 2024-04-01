@@ -3,9 +3,13 @@ import React from "react";
 import IMAGES from "../images";
 import EntypoIcon from "react-native-vector-icons/Entypo";
 import { Overlay } from "react-native-elements";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import IoniconsIcon from "react-native-vector-icons/Ionicons";
 import FeatherIcon from "react-native-vector-icons/Feather";
+import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
+import AntDesignIcon from "react-native-vector-icons/AntDesign";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 
 
@@ -76,52 +80,56 @@ const styles = StyleSheet.create({
         margin: 5,
         fontSize: 20,
         color: "black",
-    }
+    },
+    ItemName: {
+        fontSize: 16,
+        margin: 5,
+    },
+    bookmarkIcon: {
+        fontSize: 30,
+        color: "black",
+        margin: 10,
+    },
+    reportIcon: {
+        fontSize: 30,
+        color: "red",
+        margin: 10,
+    },
+    ToolsOverlayItems: {
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+        margin: 20,
+        width: width * 0.5,
+    },
 })
 
 
 
 export default function DiscussionDetail({ route }) {
+    const isFocused = useIsFocused();
+
     const { details } = route.params;
 
-    const temp = {
-        id: 1,
-        topic: "EE2013 Assignment 1",
-        category: "EE2013",
-        author: "Peter",
-        date: "12/03/2021 10:00pm",
-        image: 'https://images.unsplash.com/photo-1699959560616-aa17ace76879?q=80&w=2128&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        description: "This study explores the influence of virtual reality (VR) technology on learning outcomes in higher education settings. \n\nThe research investigates the potential benefits and challenges associated with integrating VR into traditional learning environments. By analyzing existing literature, empirical studies, and qualitative interviews, this research aims to provide insights into the effectiveness of VR in enhancing student engagement, knowledge acquisition, and skill development. \n\nAdditionally, the study examines the potential limitations and ethical considerations associated with VR implementation in academic settings. \n\nThe findings of this research contribute to the growing body of knowledge on the pedagogical implications of immersive technologies and inform educational institutions' strategies for incorporating VR into their curricula.",
-        comments: [
-            {
-                author: "John",
-                detail: "How do you do?",
-                date: "12/03/2021 10:00pm",
-            },
-            {
-                author: "Ken",
-                detail: "Good",
-                date: "12/03/2021 10:00pm",
-            },
-            {
-                author: "Kelven",
-                detail: "Not really",
-                date: "12/03/2021 10:00pm",
-            },
-            {
-                author: "John",
-                detail: "How's your homework?",
-                date: "12/03/2021 10:00pm",
-            },
-            {
-                author: "Ken",
-                detail: "Not yet started",
-                date: "12/03/2021 10:00pm",
-            },
-        ]
+    const defaultData = {
+        author: "",
+        banner_img: {
+            "file_name": "",
+            "link": ""
+        },
+        category: "",
+        comments: [],
+        created_at: "",
+        description: "",
+        files: [],
+        id: "",
+        topic: "",
+        updated_at: ""
     }
 
-    const [data, setData] = React.useState(temp);
+    const scrollViewRef = React.useRef<any>(null);
+
+    const [data, setData] = React.useState<any>(defaultData);
     const [isOverlayShow, setIsOverlayShow] = React.useState(false);
     const [userInput, setUserInput] = React.useState("");
     const navigation = useNavigation();
@@ -133,15 +141,104 @@ export default function DiscussionDetail({ route }) {
         setUserInput(text)
     }
 
-    React.useEffect(() => {
-        // Do fetch here
+    const goToPdfViewer = (fileDetail: any) => {
+        console.log(fileDetail)
+        fileDetail = { ...fileDetail, oldName: fileDetail.file_name }
+
+        navigation.navigate('PdfViewer', { fileDetail });
+    };
+
+    const sendComment = async () => {
         try {
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
+
+            const response = await axios.post(`http://3.26.57.153:8000/comments/add_comment`,
+                {
+                    discussion_id: details.id,
+                    detail: userInput
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${userinfo.token}`,
+                    },
+                });
+            // Handle response
+            scrollViewRef.current.scrollToEnd({ animated: true });
+            setUserInput("")
+            await fetchDiscussion();
 
         } catch (error) {
-
-        } finally {
-
+            console.log("Error sendComment:" + error);
         }
+    }
+
+    const fetchDiscussion = async () => {
+        try {
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
+
+            const response = await fetch(`http://3.26.57.153:8000/discussion/get_discussion?id=${details.id}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
+                },
+            });
+            // Handle response
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data)
+                setData(data)
+            }
+        } catch (error) {
+            console.log("Error fetchAllDiscussions:" + error);
+        }
+    }
+
+    const getComment = async () => {
+        try {
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
+
+            const response = await fetch(`http://3.26.57.153:8000/comments/get_comments?discussion_id=${details.id}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
+                },
+            });
+            // Handle response
+            if (response.ok) {
+                const result = await response.json();
+                console.log("temp")
+                console.log(data)
+                //console.log({ ...data, comments: result })
+                //setData({ ...data, comments: result })
+            }
+        } catch (error) {
+            console.log("Error sendComment:" + error);
+        }
+    }
+
+    React.useEffect(() => {
+        fetchDiscussion();
+
+        const interval = setInterval(() => {
+            fetchDiscussion();
+        }, 60000);
+
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -161,7 +258,12 @@ export default function DiscussionDetail({ route }) {
                 />
             </View>
             <SafeAreaView style={{ flex: 1 }}>
-                <ScrollView style={{ marginBottom: 100,height: height*0.3 }}>
+                <ScrollView
+                    ref={scrollViewRef}
+                    onContentSizeChange={() =>
+                        scrollViewRef.current.scrollToEnd({ animated: true })
+                    }
+                    style={{ marginBottom: 100, height: height * 0.3 }}>
                     <View style={{ marginHorizontal: 10, marginBottom: 30, paddingBottom: 30, borderBottomColor: 'gray', borderBottomWidth: 1 }}>
                         <View style={{
                             flexDirection: 'row',
@@ -201,13 +303,13 @@ export default function DiscussionDetail({ route }) {
                                         justifyContent: 'flex-start',
                                         padding: 5
                                     }}>
-                                        <Text style={{ fontSize: 13 }}>{data.author + " · " + data.date}</Text>
+                                        <Text style={{ fontSize: 13 }}>{`${data.author} ·  ${new Date(data.created_at).toLocaleString()}`}</Text>
                                     </View>
                                 </View>
                             </View>
                         </View>
                         <Image
-                            source={{ uri: data.image }}
+                            source={{ uri: data.banner_img.link }}
                             style={{
                                 width: width * 0.95,
                                 aspectRatio: 1,
@@ -215,47 +317,75 @@ export default function DiscussionDetail({ route }) {
                                 marginBottom: 10
                             }}
                         />
-                        <Text style={{ color: "black" }}>{data.description}</Text>
+                        <View style={{ paddingHorizontal: 20 }}>
+                            <Text style={{ color: "black", fontSize: 18 }}>{data.description}</Text>
+                        </View>
+                        <View style={{ justifyContent: 'center', alignItems: 'flex-start', marginTop: 10, paddingHorizontal: 20 }}>
+                            <Text style={{ fontWeight: "bold" }}>Reference Document:</Text>
+                            {
+                                data.files.length > 0 ?
+                                    data.files.map((doc: any) => {
+                                        return (
+                                            <View>
+                                                <TouchableOpacity onPress={() => { goToPdfViewer(doc) }} style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
+                                                    <AntDesignIcon name="pdffile1" style={{
+                                                        fontSize: 10,
+                                                        color: "black",
+                                                    }} />
+                                                    <Text>  {doc.file_name.substring(doc.file_name.indexOf("_") + 1)}</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        )
+                                    })
+                                    : (<></>)
+                            }
+                        </View>
                     </View>
                     <View style={styles.commentsContainer}>
                         {
-                            data.comments.map((comment, index) => {
-                                return (
-                                    <View key={index} style={{
-                                        flexDirection: 'row',
-                                        justifyContent: 'flex-start',
-                                        alignItems: "center",
-                                        margin: 10,
-                                        marginTop: 0,
-                                        borderBottomColor: 'gray',
-                                        borderBottomWidth: (index == data.comments.length - 1 ? 0 : 0.5)
-                                    }}>
-                                        <Image
-                                            source={IMAGES.USER}
-                                            style={{
-                                                height: 50,
-                                                width: 50,
-                                                aspectRatio: 1,
-                                                borderRadius: 25
-                                            }}
-                                        />
-                                        <View style={{
-                                            flex: 1,
+                            data.comments > 0 ? (
+                                data.comments.map((comment, index) => {
+                                    return (
+                                        <View key={index} style={{
                                             flexDirection: 'row',
-                                            justifyContent: 'space-between',
+                                            justifyContent: 'flex-start',
+                                            alignItems: "center",
                                             margin: 10,
+                                            marginTop: 0,
+                                            borderBottomColor: 'gray',
+                                            borderBottomWidth: (index == data.comments.length - 1 ? 0 : 0.5)
                                         }}>
+                                            <Image
+                                                source={IMAGES.USER}
+                                                style={{
+                                                    height: 50,
+                                                    width: 50,
+                                                    aspectRatio: 1,
+                                                    borderRadius: 25
+                                                }}
+                                            />
                                             <View style={{
-                                                justifyContent: 'flex-start',
+                                                flex: 1,
+                                                flexDirection: 'row',
+                                                justifyContent: 'space-between',
+                                                margin: 10,
                                             }}>
-                                                <Text style={{ fontSize: 13 }}>{comment.author}</Text>
-                                                <Text style={{ fontSize: 15, color: "black" }}>{comment.detail}</Text>
+                                                <View style={{
+                                                    justifyContent: 'flex-start',
+                                                }}>
+                                                    <Text style={{ fontSize: 13 }}>{comment.author}</Text>
+                                                    <Text style={{ fontSize: 15, color: "black" }}>{comment.detail}</Text>
+                                                </View>
+                                                <Text style={{ fontSize: 13 }}>{new Date(comment.created_at).toLocaleString()}</Text>
                                             </View>
-                                            <Text style={{ fontSize: 13 }}>{comment.date}</Text>
                                         </View>
-                                    </View>
-                                )
-                            })
+                                    )
+                                })
+                            ) : (
+                                <View style={{ justifyContent: "center", alignItems: "center", margin: 30 }}>
+                                    <Text style={{ fontSize: 20, fontWeight: "bold" }}>--- Give The First Reply ---</Text>
+                                </View>
+                            )
                         }
                     </View>
                 </ScrollView>
@@ -264,7 +394,8 @@ export default function DiscussionDetail({ route }) {
                         flexDirection: 'row',
                         justifyContent: 'flex-start',
                         alignItems: "center",
-                        marginHorizontal: 10
+                        paddingHorizontal: 10,
+                        backgroundColor: "white"
                     }}>
                         <Image
                             source={IMAGES.USER}
@@ -292,7 +423,7 @@ export default function DiscussionDetail({ route }) {
                                 <IoniconsIcon
                                     name="send"
                                     style={styles.sendButton}
-                                    onPress={() => { }}
+                                    onPress={async () => { await sendComment() }}
                                 />
                             </View>
                         </View>
@@ -308,9 +439,12 @@ export default function DiscussionDetail({ route }) {
             >
                 <Text style={styles.ItemName}>Action</Text>
                 <TouchableOpacity style={styles.ToolsOverlayItems}>
-                    <EntypoIcon name="folder" style={styles.ItemIcon} />
-
-                    <Text>folder</Text>
+                    <EntypoIcon name="flag" style={styles.reportIcon} />
+                    <Text style={{ color: "red" }}>Report</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ToolsOverlayItems}>
+                    <FontAwesomeIcon name="bookmark" style={styles.bookmarkIcon} />
+                    <Text style={{ color: "black" }}>Bookmark</Text>
                 </TouchableOpacity>
             </Overlay >
         </View>

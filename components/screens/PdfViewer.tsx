@@ -9,6 +9,7 @@ import {
     View,
     StyleSheet,
     Dimensions,
+    Text
 } from 'react-native';
 import {
     DirectoryPickerResponse,
@@ -72,6 +73,9 @@ const PdfViewer = ({ route }) => {
                     style={styles.backButton}
                     onPress={() => goToBack()}
                 />
+                <View style={{ width: width * 0.8, justifyContent: 'flex-start', alignItems: 'flex-start', marginHorizontal: 10 }}>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: "black" }}>{(fileDetail.oldName).substring((fileDetail.oldName).indexOf("_") + 1)}</Text>
+                </View>
             </View>
             <View style={styles.container}>
                 <Pdf
