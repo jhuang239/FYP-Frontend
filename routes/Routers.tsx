@@ -1,14 +1,12 @@
 import * as React from 'react';
-import { View, Platform } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {View, Platform} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import IoniconsIcon from "react-native-vector-icons/Ionicons";
-import Octicons from "react-native-vector-icons/Octicons";
+import IoniconsIcon from 'react-native-vector-icons/Ionicons';
+import Octicons from 'react-native-vector-icons/Octicons';
 
-
-import Home from '../components/screens/Home';
 import Chatbot from '../components/screens/Chatbot';
 import UploadFile from '../components/screens/UploadFile';
 import FileList from '../components/screens/FileList';
@@ -16,14 +14,13 @@ import Discussion from '../components/screens/Discussion';
 import NewHome from '../components/screens/NewHome';
 import VideoList from '../components/screens/VideoList';
 
-
 type RoutersProps = {
   UpdateUserState: (user: any) => void;
 };
 
 const Tab = createBottomTabNavigator();
 
-const Routers = ({ UpdateUserState }: RoutersProps) => {
+const Routers = ({UpdateUserState}: RoutersProps) => {
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -35,7 +32,7 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
         options={{
           tabBarLabel: 'Home',
           headerShown: false,
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({color, size}) => (
             <MaterialCommunityIcons name="home" color={color} size={size} />
           ),
         }}>
@@ -46,11 +43,10 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
         options={{
           headerShown: false,
           tabBarLabel: 'Chatbot',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({color, size}) => (
             <MaterialCommunityIcons name="chat" color={color} size={size} />
           ),
-        }}
-      >
+        }}>
         {props => <Chatbot UpdateUserState={UpdateUserState} />}
       </Tab.Screen>
       <Tab.Screen
@@ -58,7 +54,7 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
         options={{
           tabBarLabel: 'Upload File',
           headerShown: false,
-          tabBarIcon: ({ color, size }) => {
+          tabBarIcon: ({color, size}) => {
             return (
               <View
                 style={{
@@ -68,14 +64,13 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
                   borderRadius: 45,
                   alignContent: 'center',
                   justifyContent: 'center',
-                  backgroundColor: "white"
+                  backgroundColor: 'white',
                 }}>
                 <MaterialCommunityIcons name="upload" color={color} size={60} />
               </View>
-            )
-          }
-        }}
-      >
+            );
+          },
+        }}>
         {props => <UploadFile UpdateUserState={UpdateUserState} />}
       </Tab.Screen>
       <Tab.Screen
@@ -83,11 +78,10 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
         options={{
           tabBarLabel: 'Explorer',
           headerShown: false,
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({color, size}) => (
             <IoniconsIcon name="library" color={color} size={size} />
           ),
-        }}
-      >
+        }}>
         {props => <FileList UpdateUserState={UpdateUserState} />}
       </Tab.Screen>
       <Tab.Screen
@@ -95,11 +89,10 @@ const Routers = ({ UpdateUserState }: RoutersProps) => {
         options={{
           tabBarLabel: 'Discussion',
           headerShown: false,
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({color, size}) => (
             <Octicons name="comment-discussion" color={color} size={size} />
           ),
-        }}
-      >
+        }}>
         {props => <Discussion UpdateUserState={UpdateUserState} />}
       </Tab.Screen>
     </Tab.Navigator>

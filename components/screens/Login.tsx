@@ -9,12 +9,12 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
+import {useForm, Controller} from 'react-hook-form';
 import IMAGES from '../images';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios, { AxiosHeaders } from 'axios';
+import axios, {AxiosHeaders} from 'axios';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import { Input } from 'react-native-elements';
+import {Input} from 'react-native-elements';
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontSize: 10,
-    marginBottom: 20
+    marginBottom: 20,
   },
   image_container: {
     alignItems: 'center',
@@ -88,12 +88,12 @@ type loginProps = {
   UpdateUserState: (user: any) => void;
 };
 
-const Login = ({ UpdateUserState }: loginProps) => {
+const Login = ({UpdateUserState}: loginProps) => {
   const {
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: {errors},
   } = useForm({
     defaultValues: {
       username: '',
@@ -103,7 +103,7 @@ const Login = ({ UpdateUserState }: loginProps) => {
 
   const onSubmit = async (data: any) => {
     console.log('data', data);
-    const { username, password } = data;
+    const {username, password} = data;
     if (username == '' || password == '') return;
 
     //if os == android use 10.0.2.2
@@ -117,8 +117,8 @@ const Login = ({ UpdateUserState }: loginProps) => {
 
     try {
       const urlencoded = new URLSearchParams();
-      urlencoded.append("username", username);
-      urlencoded.append("password", password);
+      urlencoded.append('username', username);
+      urlencoded.append('password', password);
 
       const response = await axios
         .post(
@@ -165,11 +165,11 @@ const Login = ({ UpdateUserState }: loginProps) => {
       <View style={styles.textInputGroup}>
         <Controller
           control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
+          render={({field: {onChange, onBlur, value}}) => (
             <Input
               label="Username"
               placeholder="Input Your Username Here"
-              leftIcon={{ type: 'font-awesome', name: 'user' }}
+              leftIcon={{type: 'font-awesome', name: 'user'}}
               style={[styles.input, errors.username && styles.inputError]}
               value={value}
               onChangeText={onChange}
@@ -185,7 +185,7 @@ const Login = ({ UpdateUserState }: loginProps) => {
             // />
           )}
           name="username"
-          rules={{ required: true }}
+          rules={{required: true}}
         />
         {errors.username && (
           <Text style={styles.errorText}>Username is required</Text>
@@ -194,12 +194,12 @@ const Login = ({ UpdateUserState }: loginProps) => {
         {/* <Text style={styles.label}>Password</Text> */}
         <Controller
           control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
+          render={({field: {onChange, onBlur, value}}) => (
             <Input
               secureTextEntry
               label="Password"
               placeholder="Input Your Password Here"
-              leftIcon={{ type: 'font-awesome', name: 'lock' }}
+              leftIcon={{type: 'font-awesome', name: 'lock'}}
               style={[styles.input, errors.password && styles.inputError]}
               value={value}
               onChangeText={onChange}
@@ -216,7 +216,7 @@ const Login = ({ UpdateUserState }: loginProps) => {
             // />
           )}
           name="password"
-          rules={{ required: true }}
+          rules={{required: true}}
         />
         {errors.password && (
           <Text style={styles.errorText}>Password is required</Text>
