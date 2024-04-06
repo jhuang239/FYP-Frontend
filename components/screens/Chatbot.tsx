@@ -39,6 +39,7 @@ const width = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: Platform.OS == "ios" ? 20 : 0,
     flex: 1,
     backgroundColor: '#ffedd5',
     alignItems: 'center',

@@ -6,6 +6,7 @@ import {
     ScrollView,
     TouchableOpacity,
     Text,
+    Platform,
 } from "react-native";
 import IoniconsIcon from "react-native-vector-icons/Ionicons";
 import { Overlay, LinearProgress, CheckBox } from "react-native-elements";
@@ -20,6 +21,7 @@ const width = Dimensions.get("window").width;
 
 const styles = StyleSheet.create({
     topbar: {
+        paddingTop: Platform.OS == "ios" ? 20 : 0,
         flexDirection: "row",
         alignItems: "center",
         width: width,
@@ -39,7 +41,7 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
         alignItems: "center",
         backgroundColor: "#ffedd5",
-        height: height,
+        height: Platform.OS == "ios" ? height * 0.95 : height,
     },
     questionNumberContainer: {
         justifyContent: "flex-start",

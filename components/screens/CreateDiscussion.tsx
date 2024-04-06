@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Dimensions, Image } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Dimensions, Image, Modal, Platform } from "react-native";
 import React from "react";
 import IMAGES from "../images";
 import EntypoIcon from "react-native-vector-icons/Entypo";
@@ -16,6 +16,7 @@ import DocumentPicker, {
     isInProgress,
     types,
 } from 'react-native-document-picker';
+import { Input } from 'react-native-elements';
 
 
 
@@ -25,6 +26,7 @@ const height = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
     container: {
+        paddingTop: Platform.OS == "ios" ? 20 : 0,
         flex: 1,
         backgroundColor: '#ffedd5',
     },
@@ -69,7 +71,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white'
     },
     submitIcon: {
-        fontSize: 30,
+        fontSize: 15,
         color: "black",
     },
     commentsContainer: {
@@ -100,12 +102,36 @@ const styles = StyleSheet.create({
         color: "red",
         margin: 10,
     },
-    ToolsOverlayItems: {
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
+    modalContainer: {
         margin: 20,
-        width: width * 0.5,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalText: {
+        fontSize: 25,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    modalButton: {
+        backgroundColor: '#21201d',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 })
 
@@ -119,10 +145,15 @@ export default function CreateDiscussion() {
         size: 0
     }
 
-    const [isOverlayShow, setIsOverlayShow] = React.useState(false);
+    const [modalMessage, setModalMessage] = React.useState("")
+    const [isMessageModalVisible, setIsMessageModalVisible] = React.useState(false);
+    const [passVaildation, setPassVaildation] = React.useState(false)
 
-    const [files, setFiles] = React.useState<any[]>([defaultUpdateFile]);
+    const [title, setTitle] = React.useState("");
+    const [category, setCategory] = React.useState("");
+    const [content, setContent] = React.useState("");
     const [banner, setBanner] = React.useState<any>(null);
+    const [files, setFiles] = React.useState<any[]>([defaultUpdateFile]);
 
 
     const [expandPart1, setExpandPart1] = React.useState(false);
@@ -137,8 +168,20 @@ export default function CreateDiscussion() {
         navigation.goBack();
     };
 
+    const goToPdfPreViewer = (file: any) => {
+        console.log(file)
+        navigation.navigate('PdfPreViewer', { fileDetail: file });
+    }
+
 
     const sendDiscussion = async () => {
+        if (title == "" || category == "" || content == "" || banner == null) {
+            setModalMessage("Missing Information")
+            setIsMessageModalVisible(true)
+            return;
+        } else {
+            setPassVaildation(true)
+        }
         try {
             const userinfo = await AsyncStorage.getItem('userData').then(value => {
                 if (value) {
@@ -149,11 +192,19 @@ export default function CreateDiscussion() {
 
             const formdata = new FormData();
             formdata.append("data", JSON.stringify({
-                topic: "Fuck You 123", category: "EE4070", description: "No comments!"
+                topic: title,
+                category: category,
+                description: content
             }))
-            formdata.append("banner_img", banner, banner.name)
-            for (var i = 0; i < files.length - 1; i++) {
-                formdata.append("files", files[i], files[i].name)
+            if (banner) {
+                formdata.append("banner_img", banner, banner.name)
+            }
+            if (files.length > 0) {
+                for (var i = 0; i < files.length - 1; i++) {
+                    formdata.append("files", files[i], files[i].name)
+                }
+            } else {
+                formdata.append("files", null)
             }
 
             const response = await fetch(`http://3.26.57.153:8000/discussion/add_discussion`,
@@ -166,11 +217,18 @@ export default function CreateDiscussion() {
                 });
             // Handle response
             if (response.ok) {
+                console.log("pass");
                 const data = await response.json();
                 console.log(data);
+                setModalMessage("Creation Success")
             }
+            const data = await response.json();
+            console.log(data);
         } catch (error) {
             console.log("Error sendComment:" + error);
+            setModalMessage("Creation Failed: " + error)
+        } finally {
+            setIsMessageModalVisible(true)
         }
     }
 
@@ -191,6 +249,12 @@ export default function CreateDiscussion() {
         setBanner(ImageInfos[0]);
     }
 
+    React.useEffect(() => {
+        if (!isMessageModalVisible && passVaildation) {
+            navigation.goBack();
+        }
+    }, [isMessageModalVisible]);
+
 
     return (
         <View style={styles.container}>
@@ -205,7 +269,7 @@ export default function CreateDiscussion() {
                     onPress={() => {
                         sendDiscussion();
                     }}>
-                    <Text style={{ fontWeight: "bold", fontSize: 20, color: "black", marginRight: 5 }}>Send</Text>
+                    <Text style={{ fontWeight: "bold", fontSize: 15, color: "black", marginRight: 5 }}>Create Now</Text>
                     <IoniconsIcon
                         name="send"
                         style={styles.submitIcon}
@@ -218,7 +282,7 @@ export default function CreateDiscussion() {
                     <View style={{ justifyContent: "center", alignItems: "center" }}>
                         <View style={{ width: width * 0.9, margin: 10, padding: 20, borderColor: "gray", borderWidth: 1, borderRadius: 15, backgroundColor: "lightgray" }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5 }}>
-                                <Text style={{ fontWeight: "bold", fontSize: 20, color: "black" }}>Category</Text>
+                                <Text style={{ fontWeight: "bold", fontSize: 20, color: "black" }}>General Information</Text>
                                 {expandPart1 ?
                                     <EntypoIcon name="minus" style={{ fontWeight: "bold", fontSize: 20, color: "black" }} onPress={() => {
                                         setExpandPart1(false);
@@ -228,6 +292,29 @@ export default function CreateDiscussion() {
                                         setExpandPart1(true);
                                     }} />
                                 }
+                            </View>
+                            <View>
+                                {expandPart1 ? (
+                                    <View>
+                                        <View style={{ margin: 15, marginBottom: 0 }}>
+                                            <Input
+                                                label="Discussion Title"
+                                                placeholder="Fill Here"
+                                                value={title}
+                                                onChangeText={setTitle}
+                                            />
+                                        </View>
+                                        <View style={{ margin: 15, marginBottom: 0 }}>
+                                            <Input
+                                                label="Discussion Category"
+                                                placeholder="Fill Here"
+                                                leftIcon={{ type: 'font-awesome', name: 'navicon' }}
+                                                value={category}
+                                                onChangeText={setCategory}
+                                            />
+                                        </View>
+                                    </View>
+                                ) : (<></>)}
                             </View>
                         </View>
                         <View style={{ width: width * 0.9, margin: 10, padding: 20, borderColor: "gray", borderWidth: 1, borderRadius: 15, backgroundColor: "lightgray" }}>
@@ -242,6 +329,22 @@ export default function CreateDiscussion() {
                                         setExpandPart2(true);
                                     }} />
                                 }
+                            </View>
+                            <View>
+                                {expandPart2 ? (
+                                    <View style={{ marginTop: 15, marginHorizontal: 5, marginBottom: 0 }}>
+                                        <Input
+                                            inputContainerStyle={{ borderBottomWidth: 0 }}
+                                            style={{ padding: 10, borderWidth: 1, borderColor: "gray", borderRadius: 15, textAlignVertical: "top" }}
+                                            multiline
+                                            numberOfLines={10}
+                                            label="Discussion Content"
+                                            placeholder="Fill Here"
+                                            value={content}
+                                            onChangeText={setContent}
+                                        />
+                                    </View>
+                                ) : (<></>)}
                             </View>
                         </View>
                         <View style={{ width: width * 0.9, margin: 10, padding: 20, borderColor: "gray", borderWidth: 1, borderRadius: 15, backgroundColor: "lightgray" }}>
@@ -308,10 +411,16 @@ export default function CreateDiscussion() {
                             {expandPart4 ?
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', margin: 10, padding: 10 }}>
                                     <View>
-                                        {files.map((file) => {
+                                        {files.map((file, index) => {
                                             if (file.type != "add") {
                                                 return (
-                                                    <TouchableOpacity style={{ justifyContent: "center", alignItems: "center", width: width * 0.65, margin: 10, padding: 10, borderColor: "gray", borderWidth: 1, borderRadius: 15, backgroundColor: "lightgray" }}>
+                                                    <TouchableOpacity
+                                                        style={{ justifyContent: "center", alignItems: "center", width: width * 0.65, margin: 10, padding: 10, borderColor: "gray", borderWidth: 1, borderRadius: 15, backgroundColor: "lightgray" }}
+                                                        onPress={() => {
+                                                            goToPdfPreViewer(file)
+                                                        }}
+                                                        key={index}
+                                                    >
                                                         <View style={{ flexDirection: 'row', width: width * 0.6, justifyContent: 'flex-end', alignItems: 'center' }}>
                                                             <EntypoIcon name="trash" style={{ fontSize: 15, color: "black" }} onPress={() => {
                                                                 setFiles([...files.filter((f) => { return f.name != file.name })])
@@ -338,6 +447,7 @@ export default function CreateDiscussion() {
                                                                 .then(handleUploadFile)
                                                                 .catch(handleError);
                                                         }}
+                                                        key={index}
                                                     >
                                                         <Text style={{ fontWeight: "bold", fontSize: 20, color: "white" }}>{file.name}</Text>
                                                     </TouchableOpacity>
@@ -352,22 +462,19 @@ export default function CreateDiscussion() {
                 </ScrollView>
             </SafeAreaView>
 
-            < Overlay
-                isVisible={isOverlayShow}
-                onBackdropPress={() => {
-                    setIsOverlayShow(false)
-                }}
-            >
-                <Text style={styles.ItemName}>Action</Text>
-                <TouchableOpacity style={styles.ToolsOverlayItems}>
-                    <EntypoIcon name="flag" style={styles.reportIcon} />
-                    <Text style={{ color: "red" }}>Report</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.ToolsOverlayItems}>
-                    <FontAwesomeIcon name="bookmark" style={styles.bookmarkIcon} />
-                    <Text style={{ color: "black" }}>Bookmark</Text>
-                </TouchableOpacity>
-            </Overlay >
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isMessageModalVisible}>
+                <View style={styles.modalContainer}>
+                    <Text style={styles.modalText}>{modalMessage}</Text>
+                    <TouchableOpacity
+                        style={styles.modalButton}
+                        onPress={() => setIsMessageModalVisible(false)}>
+                        <Text style={styles.modalButtonText}>OK</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
         </View>
     )
 }

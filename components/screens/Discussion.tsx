@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, FlatList, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, FlatList, Image, Platform } from "react-native";
 import React from "react";
 import IMAGES from "../images";
 import EntypoIcon from "react-native-vector-icons/Entypo";
@@ -11,6 +11,7 @@ const height = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
     container: {
+        paddingTop: Platform.OS == "ios" ? 20 : 0,
         flex: 1,
         backgroundColor: '#ffedd5',
     },
@@ -204,6 +205,8 @@ export default function Discussion({ UpdateUserState }) {
                         alignItems: "flex-start",
                         width: width,
                         backgroundColor: "#ffedd5",
+                        borderTopWidth: 0,
+                        borderBottomWidth: 0
                     }}
                     placeholder="Type Here..."
                     onChangeText={setSearchKeyword}
@@ -233,7 +236,7 @@ export default function Discussion({ UpdateUserState }) {
                 data={data.filter((item) =>
                     item.category.toLowerCase().includes(selectedTag.toLowerCase())
                 )}
-                contentContainerStyle={{ flex: 1, paddingVertical: 25 }}
+                contentContainerStyle={{ flex: 1 }}
                 keyExtractor={(item, index) => item.id + ''}
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item, index }) => {

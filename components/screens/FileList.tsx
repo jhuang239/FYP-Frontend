@@ -9,6 +9,7 @@ import {
     SafeAreaView,
     TextInput,
     Modal,
+    Platform,
 
 } from "react-native";
 import EntypoIcon from "react-native-vector-icons/Entypo";
@@ -30,6 +31,7 @@ const width = Dimensions.get("window").width;
 
 const styles = StyleSheet.create({
     topbar: {
+        paddingTop: Platform.OS == "ios" ? 20 : 0,
         flexDirection: "row",
         alignItems: "center",
         width: width,
@@ -39,7 +41,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#ffedd5",
-        height: height * 0.85,
+        height: Platform.OS == "ios" ? height * 0.8 : height * 0.85,
         // flex: 1,
     },
     searchBar: {
@@ -47,8 +49,10 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         justifyContent: "flex-start",
         alignItems: "flex-start",
-        width: width * 0.8,
+        width: width * 0.75,
         backgroundColor: "#ffedd5",
+        borderBottomWidth: 0,
+        borderTopWidth: 0
     },
     backButton: {
         marginLeft: 10,
@@ -496,6 +500,10 @@ const FileList = ({ UpdateUserState }) => {
         }
     }
 
+    const goToVideoList = () => {
+        navigation.navigate('VideoList');
+    };
+
     React.useEffect(() => {
         if (isFocused) {
             console.log("Do fetch here")
@@ -516,7 +524,7 @@ const FileList = ({ UpdateUserState }) => {
             <View style={styles.topbar}>
                 <IoniconsIcon onPress={() => popStack()} name="arrow-back" style={currentLocation != "root" ? styles.backButton : { display: 'none' }} />
                 <SearchBar
-                    containerStyle={currentLocation != "root" ? styles.searchBar : { ...styles.searchBar, width: width * 0.87 }}
+                    containerStyle={currentLocation == "root" ? styles.searchBar : { ...styles.searchBar, width: width * 0.663 }}
                     placeholder="Search Here..."
                     onChangeText={setSearchKeyword}
                     value={SearchKeyword}
@@ -525,7 +533,15 @@ const FileList = ({ UpdateUserState }) => {
                     showLoading={isSearchLoading}
                 />
                 <TouchableOpacity
+                    onPress={() => goToVideoList()}
+                    style={{ margin: 5 }}
+                >
+                    <EntypoIcon name="youtube" style={styles.addIcon} />
+                </TouchableOpacity>
+                <TouchableOpacity
                     onPress={() => setIsAddOverlayShow(true)}
+                    style={{ margin: 5 }}
+
                 >
                     <EntypoIcon name="squared-plus" style={styles.addIcon} />
                 </TouchableOpacity>

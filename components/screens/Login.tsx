@@ -13,6 +13,8 @@ import { useForm, Controller } from 'react-hook-form';
 import IMAGES from '../images';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosHeaders } from 'axios';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import { Input } from 'react-native-elements';
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
@@ -37,10 +39,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: width * 0.7,
+    height: height * 0.05,
   },
   btn_text: {
     color: 'white',
     textAlign: 'center',
+    fontWeight: 'bold',
     fontSize: 20,
   },
   container: {
@@ -55,7 +59,6 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    marginTop: 20,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#999',
@@ -67,8 +70,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    fontSize: 14,
-    marginTop: 5,
+    fontSize: 10,
+    marginBottom: 20
   },
   image_container: {
     alignItems: 'center',
@@ -163,14 +166,23 @@ const Login = ({ UpdateUserState }: loginProps) => {
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
+            <Input
+              label="Username"
+              placeholder="Input Your Username Here"
+              leftIcon={{ type: 'font-awesome', name: 'user' }}
               style={[styles.input, errors.username && styles.inputError]}
-              onChangeText={onChange}
               value={value}
-              placeholder="Username"
-              placeholderTextColor="#999"
+              onChangeText={onChange}
               onBlur={handleBlurUsername}
             />
+            // <TextInput
+            //   style={[styles.input, errors.username && styles.inputError]}
+            //   onChangeText={onChange}
+            //   value={value}
+            //   placeholder="Username"
+            //   placeholderTextColor="#999"
+            //   onBlur={handleBlurUsername}
+            // />
           )}
           name="username"
           rules={{ required: true }}
@@ -183,15 +195,25 @@ const Login = ({ UpdateUserState }: loginProps) => {
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
+            <Input
               secureTextEntry
+              label="Password"
+              placeholder="Input Your Password Here"
+              leftIcon={{ type: 'font-awesome', name: 'lock' }}
               style={[styles.input, errors.password && styles.inputError]}
-              onChangeText={onChange}
               value={value}
-              placeholder="Password"
-              placeholderTextColor="#999"
+              onChangeText={onChange}
               onBlur={handleBlurPassword}
             />
+            // <TextInput
+            //   secureTextEntry
+            //   style={[styles.input, errors.password && styles.inputError]}
+            //   onChangeText={onChange}
+            //   value={value}
+            //   placeholder="Password"
+            //   placeholderTextColor="#999"
+            //   onBlur={handleBlurPassword}
+            // />
           )}
           name="password"
           rules={{ required: true }}

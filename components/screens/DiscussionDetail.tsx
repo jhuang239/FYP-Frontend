@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Dimensions, Image } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Dimensions, Image, Platform } from "react-native";
 import React from "react";
 import IMAGES from "../images";
 import EntypoIcon from "react-native-vector-icons/Entypo";
@@ -19,6 +19,7 @@ const height = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
     container: {
+        paddingTop: Platform.OS == "ios" ? 20 : 0,
         flex: 1,
         backgroundColor: '#ffedd5',
     },
@@ -150,6 +151,7 @@ export default function DiscussionDetail({ route }) {
 
     const sendComment = async () => {
         try {
+            if (userInput == "") return
             const userinfo = await AsyncStorage.getItem('userData').then(value => {
                 if (value) {
                     return JSON.parse(value);
@@ -343,7 +345,7 @@ export default function DiscussionDetail({ route }) {
                     </View>
                     <View style={styles.commentsContainer}>
                         {
-                            data.comments > 0 ? (
+                            data.comments.length > 0 ? (
                                 data.comments.map((comment, index) => {
                                     return (
                                         <View key={index} style={{

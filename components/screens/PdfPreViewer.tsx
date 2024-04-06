@@ -12,59 +12,25 @@ import {
     Text,
     Platform
 } from 'react-native';
-import {
-    DirectoryPickerResponse,
-    DocumentPickerResponse,
-
-} from 'react-native-document-picker';
 
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
-const PdfViewer = ({ route }) => {
+const PdfPreViewer = ({ route }) => {
     const { fileDetail } = route.params;
     const navigation = useNavigation();
 
-    const [fileUrl, setFileUrl] = React.useState("");
-
-    const fetchFile = async () => {
-        try {
-            const userinfo = await AsyncStorage.getItem('userData').then(value => {
-                if (value) {
-                    return JSON.parse(value);
-                }
-            });
-            if (userinfo == null) return;
-
-            const response = await fetch(`http://3.26.57.153:8000/file/getPath?file_name=${fileDetail.oldName}`, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${userinfo.token}`,
-                },
-            });
-            // Handle response
-            if (response.ok) {
-                const result = await response.json();
-                setFileUrl(result.download_url)
-            } else {
-                // Error occurred while uploading file
-                console.log("Error fetch File:" + response.status);
-            }
-        } catch (error) {
-            console.log("Error fetch File:" + error);
-        }
-    }
-
-    React.useEffect(() => {
-        fetchFile();
-    }, []);
-
+    const [file, setFile] = React.useState({ fileCopyUri: "", name: "", size: "", type: "", uri: "" });
 
     const goToBack = () => {
         navigation.goBack();
     };
 
+    React.useEffect(() => {
+        console.log(fileDetail)
+        setFile(fileDetail)
+    }, [])
 
     return (
         <View>
@@ -75,7 +41,7 @@ const PdfViewer = ({ route }) => {
                     onPress={() => goToBack()}
                 />
                 <View style={{ width: width * 0.8, justifyContent: 'flex-start', alignItems: 'flex-start', marginHorizontal: 10 }}>
-                    <Text style={{ fontSize: 20, fontWeight: "bold", color: "black" }}>{(fileDetail.oldName).substring((fileDetail.oldName).indexOf("_") + 1)}</Text>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: "black" }}>{file.name}</Text>
                 </View>
             </View>
             <View style={styles.container}>
@@ -83,7 +49,7 @@ const PdfViewer = ({ route }) => {
                     enablePaging={true}
                     trustAllCerts={false}
                     source={{
-                        uri: fileUrl,
+                        uri: file.fileCopyUri,
                         cache: false,
                     }}
                     onLoadComplete={(numberOfPages, filePath) => {
@@ -137,4 +103,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default PdfViewer;
+export default PdfPreViewer;

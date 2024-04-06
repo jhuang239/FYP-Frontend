@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, FlatList } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, FlatList, Platform } from "react-native";
 import React from "react";
 import Carousel from 'react-native-reanimated-carousel';
 import IoniconsIcon from "react-native-vector-icons/Ionicons";
@@ -13,6 +13,7 @@ const height = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
     container: {
+        paddingTop: Platform.OS == "ios" ? 20 : 0,
         flex: 1,
         backgroundColor: '#ffedd5',
     },
@@ -184,7 +185,7 @@ export default function NewHome({ UpdateUserState }) {
                 <View style={{
                     justifyContent: "space-between",
                     marginHorizontal: 10,
-                    height: height * 0.48,
+                    height: Platform.OS == "ios" ? height * 0.46 : height * 0.48,
                 }}>
                     <FlatList
                         data={items}

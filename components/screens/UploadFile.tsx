@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   Modal,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import DocumentPicker, {
   DirectoryPickerResponse,
@@ -164,9 +165,12 @@ const UploadFile = (props) => {
         });
         // Handle response
         if (response.ok) {
+          const data = await response.json()
+          console.log(data)
           // File uploaded successfully
           setMessage("File uploaded successfully");
           setResult([]);
+          setSelectedDocIndex(0)
         } else {
           // Error occurred while uploading file
           setMessage("Error uploading PDF file:" + response.status);
@@ -218,7 +222,7 @@ const UploadFile = (props) => {
           <View></View>
         )}
       </View>
-      <View style={results.length > 0 ? { ...styles.container, height: height * 0.9 } : styles.container}>
+      <View style={results.length > 0 ? { ...styles.container, height: Platform.OS == "ios" ? height * 0.85 : height * 0.9 } : styles.container}>
         {results.length > 0 ? (
           <Pdf
             enablePaging={true}
@@ -332,6 +336,7 @@ const UploadFile = (props) => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: Platform.OS == "ios" ? 20 : 0,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ffedd5',
@@ -344,6 +349,7 @@ const styles = StyleSheet.create({
     color: "black",
   },
   topbar: {
+    paddingTop: Platform.OS == "ios" ? 20 : 0,
     flexDirection: "row",
     alignItems: "center",
     width: width,
@@ -389,7 +395,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: width * 0.9,
-    height: height * 0.9,
+    height: Platform.OS == "ios" ? height * 0.85 : height * 0.9,
   },
   pdfCard: {
     backgroundColor: "gray",

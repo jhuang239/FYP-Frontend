@@ -20,6 +20,9 @@ import QuestionAnswer from '../components/screens/QuestionAnswer';
 import PdfViewer from '../components/screens/PdfViewer';
 import DiscussionDetail from '../components/screens/DiscussionDetail';
 import CreateDiscussion from '../components/screens/CreateDiscussion';
+import PdfPreViewer from '../components/screens/PdfPreViewer';
+import VideoList from '../components/screens/VideoList';
+import VideoDetail from '../components/screens/VideoDetail';
 import Routers from './Routers';
 
 
@@ -56,6 +59,21 @@ const AuthorizedRouters = ({ UpdateUserState }: RoutersProps) => {
             <Stack.Screen
                 name="CreateDiscussion"
                 component={CreateDiscussion}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="PdfPreViewer"
+                component={PdfPreViewer}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="VideoList"
+                component={VideoList}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="VideoDetail"
+                component={VideoDetail}
                 options={{ headerShown: false }}
             />
         </Stack.Navigator>

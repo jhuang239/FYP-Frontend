@@ -8,6 +8,7 @@ import FileList from './components/screens/FileList';
 import QuestionAnswer from './components/screens/QuestionAnswer';
 import NewHome from './components/screens/NewHome';
 import AuthorizedRouters from './routes/AuthorizedRouters';
+import { Platform, View } from 'react-native';
 
 
 export default function App() {

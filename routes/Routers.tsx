@@ -14,6 +14,7 @@ import UploadFile from '../components/screens/UploadFile';
 import FileList from '../components/screens/FileList';
 import Discussion from '../components/screens/Discussion';
 import NewHome from '../components/screens/NewHome';
+import VideoList from '../components/screens/VideoList';
 
 
 type RoutersProps = {
