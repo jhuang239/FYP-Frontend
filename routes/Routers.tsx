@@ -26,6 +26,7 @@ const Routers = ({UpdateUserState}: RoutersProps) => {
       initialRouteName="Home"
       screenOptions={{
         tabBarActiveTintColor: '#e91e63',
+        tabBarHideOnKeyboard: true,
       }}>
       <Tab.Screen
         name="Home"

@@ -17,15 +17,12 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import IMAGES from '../images';
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import AntDesignIcon from "react-native-vector-icons/AntDesign";
-import { Overlay } from 'react-native-elements';
-import { Picker } from '@react-native-picker/picker';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import AntDesignIcon from 'react-native-vector-icons/AntDesign';
+import {Overlay} from 'react-native-elements';
+import {Picker} from '@react-native-picker/picker';
 import Markdown from 'react-native-markdown-display';
-
-
-
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -39,7 +36,7 @@ const width = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Platform.OS == "ios" ? 20 : 0,
+    paddingTop: Platform.OS == 'ios' ? 20 : 0,
     flex: 1,
     backgroundColor: '#ffedd5',
     alignItems: 'center',
@@ -92,7 +89,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     width: width * 0.8,
-    backgroundColor: "rgba(170, 183, 191, 0.4)"
+    backgroundColor: 'rgba(170, 183, 191, 0.4)',
   },
   send_button: {
     backgroundColor: '#00B9E8',
@@ -106,8 +103,8 @@ const styles = StyleSheet.create({
     margin: 5,
   },
   ToolsOverlayItems: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
     margin: 20,
     width: width * 0.6,
@@ -117,18 +114,20 @@ const styles = StyleSheet.create({
 const markDownStyles = StyleSheet.create({
   body: {
     fontSize: 16,
-    lineHeight: 24
-  }
-})
+    lineHeight: 24,
+  },
+});
 
-const Chatbot = ({ UpdateUserState }) => {
+const Chatbot = ({UpdateUserState}) => {
   const [mode, setMode] = React.useState(1);
 
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState<any>(null);
   const [items, setItems] = React.useState<any[]>([]);
   const [messages, setMessages] = React.useState<any[]>([]);
-  const [chatWithDocMessages, setChatWithDocMessages] = React.useState<any[]>([]);
+  const [chatWithDocMessages, setChatWithDocMessages] = React.useState<any[]>(
+    [],
+  );
   const [inputMessage, setInputMessage] = React.useState('');
 
   const [loading, setLoading] = React.useState(false);
@@ -136,7 +135,8 @@ const Chatbot = ({ UpdateUserState }) => {
   const [user, setUser] = React.useState<any>({});
 
   const [newChatName, setNewChatName] = React.useState('');
-  const [isCreateChatOverlayShow, setIsCreateChatOverlayShow] = React.useState(false);
+  const [isCreateChatOverlayShow, setIsCreateChatOverlayShow] =
+    React.useState(false);
 
   const create_chat = async (chat_name: string) => {
     const userinfo = await AsyncStorage.getItem('userData').then(value => {
@@ -173,13 +173,14 @@ const Chatbot = ({ UpdateUserState }) => {
         ],
       };
       try {
-        const response = await axios.post(url, data, { headers: headers });
+        const response = await axios.post(url, data, {headers: headers});
         console.log('response', response.data);
         fetchData().then((data: any) => {
           console.log('chatItems', data.chatItems);
           setItems(data.chatItems);
           setValue(
-            data.chatItems.filter((item: any) => item.id == response.data.id)[0].id,
+            data.chatItems.filter((item: any) => item.id == response.data.id)[0]
+              .id,
           );
         });
       } catch (err) {
@@ -206,13 +207,14 @@ const Chatbot = ({ UpdateUserState }) => {
         message: [],
       };
       try {
-        const response = await axios.post(url, data, { headers: headers });
+        const response = await axios.post(url, data, {headers: headers});
         console.log('response', response.data);
         fetchChatDocHistory().then((data: any) => {
           console.log('chatItems', data.chatItems);
           setItems(data.chatItems);
           setValue(
-            data.chatItems.filter((item: any) => item.id == response.data.id)[0].id,
+            data.chatItems.filter((item: any) => item.id == response.data.id)[0]
+              .id,
           );
         });
       } catch (err) {
@@ -241,9 +243,9 @@ const Chatbot = ({ UpdateUserState }) => {
             'plain-text',
             '',
             'default',
-          )
+          );
         } else {
-          setIsCreateChatOverlayShow(true)
+          setIsCreateChatOverlayShow(true);
         }
       } else {
         const url = `http://3.26.57.153:8000/chat/get_chat?id=${item}`;
@@ -252,13 +254,12 @@ const Chatbot = ({ UpdateUserState }) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${userinfo.token}`,
         };
-        const response = await axios.get(url, { headers: headers });
+        const response = await axios.get(url, {headers: headers});
         console.log('response123', response.data);
         if (response.data.length == 0) return;
         setMessages(response.data[0].message);
       }
     } else if (mode == 2) {
-
       if (item == 0) {
         if (Platform.OS === 'ios') {
           Alert.prompt(
@@ -270,9 +271,9 @@ const Chatbot = ({ UpdateUserState }) => {
             'plain-text',
             '',
             'default',
-          )
+          );
         } else {
-          setIsCreateChatOverlayShow(true)
+          setIsCreateChatOverlayShow(true);
         }
       } else {
         const url = `http://3.26.57.153:8000/chat_history_doc/get_chat?id=${item}`;
@@ -281,7 +282,7 @@ const Chatbot = ({ UpdateUserState }) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${userinfo.token}`,
         };
-        const response = await axios.get(url, { headers: headers });
+        const response = await axios.get(url, {headers: headers});
         console.log('response123', response.data);
         if (response.data.length == 0) return;
         setChatWithDocMessages(response.data.message);
@@ -320,7 +321,7 @@ const Chatbot = ({ UpdateUserState }) => {
       };
       console.log('data', data);
       try {
-        const response = await axios.put(url, data, { headers: headers });
+        const response = await axios.put(url, data, {headers: headers});
         console.log('response', response.data);
         setLoading(false);
       } catch (err) {
@@ -351,7 +352,7 @@ const Chatbot = ({ UpdateUserState }) => {
       };
       console.log('data', data);
       try {
-        const response = await axios.put(url, data, { headers: headers });
+        const response = await axios.put(url, data, {headers: headers});
         console.log('response', response.data);
         setLoading(false);
       } catch (err) {
@@ -385,7 +386,7 @@ const Chatbot = ({ UpdateUserState }) => {
 
       setMessages([...data]);
       setInputMessage('');
-      scrollViewRef.current.scrollToEnd({ animated: true });
+      scrollViewRef.current.scrollToEnd({animated: true});
 
       console.log('data', data);
       try {
@@ -402,15 +403,19 @@ const Chatbot = ({ UpdateUserState }) => {
         });
         console.log('data', data);
         setMessages([...data]);
-        scrollViewRef.current.scrollToEnd({ animated: true });
+        scrollViewRef.current.scrollToEnd({animated: true});
         await sync_chat_history(data);
       } catch (err) {
         console.log('err', err);
         setLoading(false);
       }
     } else if (mode == 2) {
-      const cloneChatWithDocMessages = [...chatWithDocMessages]
-      const newChatWithDocMessage = { query: inputMessage, answer: null, source_documents: [] }
+      const cloneChatWithDocMessages = [...chatWithDocMessages];
+      const newChatWithDocMessage = {
+        query: inputMessage,
+        answer: null,
+        source_documents: [],
+      };
       const history: any[] = [];
 
       const url = 'http://3.26.57.153:8000/chatbot/chatwithdoc';
@@ -420,23 +425,24 @@ const Chatbot = ({ UpdateUserState }) => {
       };
 
       for (var chatWithDocMessage of chatWithDocMessages) {
-        history.push(
-          {
-            question: chatWithDocMessage.query,
-            answer: chatWithDocMessage.answer,
-          }
-        )
+        history.push({
+          question: chatWithDocMessage.query,
+          answer: chatWithDocMessage.answer,
+        });
       }
 
       let data = {
         query: inputMessage,
-        history: history
+        history: history,
       };
 
-      setChatWithDocMessages([...cloneChatWithDocMessages, newChatWithDocMessage])
+      setChatWithDocMessages([
+        ...cloneChatWithDocMessages,
+        newChatWithDocMessage,
+      ]);
 
       setInputMessage('');
-      scrollViewRef.current.scrollToEnd({ animated: true });
+      scrollViewRef.current.scrollToEnd({animated: true});
 
       console.log('data', data);
       try {
@@ -445,14 +451,20 @@ const Chatbot = ({ UpdateUserState }) => {
         });
         console.log('response', response.data);
 
-        console.log("Before: " + newChatWithDocMessage);
-        newChatWithDocMessage.answer = response.data.answer
-        newChatWithDocMessage.source_documents = response.data.source_documents
-        console.log("After: " + newChatWithDocMessage);
+        console.log('Before: ' + newChatWithDocMessage);
+        newChatWithDocMessage.answer = response.data.answer;
+        newChatWithDocMessage.source_documents = response.data.source_documents;
+        console.log('After: ' + newChatWithDocMessage);
 
-        setChatWithDocMessages([...cloneChatWithDocMessages, newChatWithDocMessage])
-        scrollViewRef.current.scrollToEnd({ animated: true });
-        await sync_chat_history([...cloneChatWithDocMessages, newChatWithDocMessage]);
+        setChatWithDocMessages([
+          ...cloneChatWithDocMessages,
+          newChatWithDocMessage,
+        ]);
+        scrollViewRef.current.scrollToEnd({animated: true});
+        await sync_chat_history([
+          ...cloneChatWithDocMessages,
+          newChatWithDocMessage,
+        ]);
       } catch (err) {
         console.log('err', err);
         setLoading(false);
@@ -474,14 +486,29 @@ const Chatbot = ({ UpdateUserState }) => {
     };
     console.log('url', url);
     console.log('headers', headers);
-    const response = await axios.get(url, { headers: headers });
+    const response = await axios.get(url, {headers: headers});
     console.log('response', response.data);
-    let temp = response.data.map((chat: any) => {
-      return { label: chat.chat_name, value: chat.chat_name, id: chat.id };
-    });
-    temp.unshift({ label: 'Create New Chat', value: 'create', id: 0 });
-    temp.unshift({ id: -1, label: "\t-----\tChoose Your Bot\t-----\t", value: "default" })
+    let temp: any[] = [];
+    if (response.data.error) {
+      temp.unshift({label: 'Create New Chat', value: 'create', id: 0});
+      temp.unshift({
+        id: -1,
+        label: '\t-----\tChoose Your Bot\t-----\t',
+        value: 'default',
+      });
+    } else {
+      temp = response.data.map((chat: any) => {
+        return {label: chat.chat_name, value: chat.chat_name, id: chat.id};
+      });
+      temp.unshift({label: 'Create New Chat', value: 'create', id: 0});
+      temp.unshift({
+        id: -1,
+        label: '\t-----\tChoose Your Bot\t-----\t',
+        value: 'default',
+      });
+    }
     console.log('temp', temp);
+
     return {
       chatItems: temp,
       user: userinfo,
@@ -500,12 +527,16 @@ const Chatbot = ({ UpdateUserState }) => {
     const headers = {
       Authorization: `Bearer ${userinfo.token}`,
     };
-    const response = await axios.get(url, { headers: headers });
+    const response = await axios.get(url, {headers: headers});
     let temp = response.data.map((chat: any) => {
-      return { label: chat.chat_name, value: chat.chat_name, id: chat.id };
+      return {label: chat.chat_name, value: chat.chat_name, id: chat.id};
     });
-    temp.unshift({ label: 'Create New Chat', value: 'create', id: 0 });
-    temp.unshift({ id: -1, label: "\t-----\tChoose Your Bot\t-----\t", value: "default" })
+    temp.unshift({label: 'Create New Chat', value: 'create', id: 0});
+    temp.unshift({
+      id: -1,
+      label: '\t-----\tChoose Your Bot\t-----\t',
+      value: 'default',
+    });
     console.log('temp2', temp);
 
     return {
@@ -536,16 +567,15 @@ const Chatbot = ({ UpdateUserState }) => {
     }
   }, []);
 
-
   React.useEffect(() => {
     // Init all state
-    setOpen(false)
-    setValue(null)
-    setItems([])
-    setMessages([])
-    setChatWithDocMessages([])
-    setInputMessage('')
-    setNewChatName('')
+    setOpen(false);
+    setValue(null);
+    setItems([]);
+    setMessages([]);
+    setChatWithDocMessages([]);
+    setInputMessage('');
+    setNewChatName('');
 
     // Load data
     if (mode == 1) {
@@ -557,7 +587,7 @@ const Chatbot = ({ UpdateUserState }) => {
         setItems(data.chatItems);
       });
     }
-  }, [mode])
+  }, [mode]);
 
   const normalChat = () => {
     return (
@@ -567,16 +597,11 @@ const Chatbot = ({ UpdateUserState }) => {
           return (
             <View key={index} style={styles.assistant_container}>
               <View style={styles.icon_container}>
-                <Image
-                  source={IMAGES.BOT}
-                  style={{ width: 50, height: 50 }}
-                />
+                <Image source={IMAGES.BOT} style={{width: 50, height: 50}} />
                 <Text style={styles.icon_text}>Assistant</Text>
               </View>
-              <View >
-                <Markdown style={markDownStyles}>
-                  {message.content}
-                </Markdown>
+              <View>
+                <Markdown style={markDownStyles}>{message.content}</Markdown>
               </View>
             </View>
           );
@@ -584,10 +609,7 @@ const Chatbot = ({ UpdateUserState }) => {
           return (
             <View key={index} style={styles.user_container}>
               <View style={styles.icon_container}>
-                <Image
-                  source={IMAGES.USER}
-                  style={{ width: 50, height: 50 }}
-                />
+                <Image source={IMAGES.USER} style={{width: 50, height: 50}} />
                 <Text style={styles.icon_text}>{user.username}</Text>
               </View>
               <Text style={styles.chat_room_text}>{message.content}</Text>
@@ -595,21 +617,23 @@ const Chatbot = ({ UpdateUserState }) => {
           );
         }
       })
-    )
-  }
+    );
+  };
 
   const chatDoc = () => {
     return (
       chatWithDocMessages.length > 0 &&
       chatWithDocMessages.map((message, index) => {
         const filterSourceDocuments: string[] = [];
-        console.log(message)
+        console.log(message);
         for (var source_document of message.source_documents) {
-          const file = source_document.metadata.source.split('_')[1]
+          const file = source_document.metadata.source.split('_')[1];
           if (filterSourceDocuments.includes(file)) {
             continue;
           } else {
-            filterSourceDocuments.push(`${file} -- P.${source_document.metadata.page}`)
+            filterSourceDocuments.push(
+              `${file} -- P.${source_document.metadata.page}`,
+            );
           }
         }
 
@@ -618,75 +642,135 @@ const Chatbot = ({ UpdateUserState }) => {
             {/* // user part */}
             <View style={styles.user_container}>
               <View style={styles.icon_container}>
-                <Image
-                  source={IMAGES.USER}
-                  style={{ width: 50, height: 50 }}
-                />
+                <Image source={IMAGES.USER} style={{width: 50, height: 50}} />
                 <Text style={styles.icon_text}>{user.username}</Text>
               </View>
               <Text style={styles.chat_room_text}>{message.query}</Text>
             </View>
             {/* // bot part */}
-            {
-              message.answer != null ? (
-                <View style={styles.assistant_container}>
-                  <View style={styles.icon_container}>
-                    <Image
-                      source={IMAGES.BOT}
-                      style={{ width: 50, height: 50 }}
-                    />
-                    <Text style={styles.icon_text}>Assistant</Text>
-                  </View>
-                  <View >
-                    <Markdown style={markDownStyles}>
-                      {message.answer}
-                    </Markdown>
-                  </View>
-                  <View>
-                    {
-                      filterSourceDocuments.length > 0 ?
-                        filterSourceDocuments.map((doc: any) => {
-                          return (
-                            <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
-                              <AntDesignIcon name="pdffile1" style={{
-                                fontSize: 10,
-                                color: "black",
-                              }} />
-                              <Text>{doc}</Text>
-                            </View>
-                          )
-                        })
-                        : (<></>)
-                    }
-                  </View>
-                </View>) : (<></>)
-            }
+            {message.answer != null ? (
+              <View style={styles.assistant_container}>
+                <View style={styles.icon_container}>
+                  <Image source={IMAGES.BOT} style={{width: 50, height: 50}} />
+                  <Text style={styles.icon_text}>Assistant</Text>
+                </View>
+                <View>
+                  <Markdown style={markDownStyles}>{message.answer}</Markdown>
+                </View>
+                <View>
+                  {filterSourceDocuments.length > 0 ? (
+                    filterSourceDocuments.map((doc: any) => {
+                      return (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'flex-start',
+                            alignItems: 'center',
+                          }}>
+                          <AntDesignIcon
+                            name="pdffile1"
+                            style={{
+                              fontSize: 10,
+                              color: 'black',
+                            }}
+                          />
+                          <Text>{doc}</Text>
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <></>
+                  )}
+                </View>
+              </View>
+            ) : (
+              <></>
+            )}
           </View>
         );
-      }
-      )
-    )
-  }
+      })
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <TouchableOpacity style={{ margin: 10, height: height * 0.1, borderColor: "black", borderWidth: 1, borderRadius: 25, flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: mode == 1 ? "#8c77ed" : "lightgray" }} onPress={() => { setMode(1) }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+        <TouchableOpacity
+          style={{
+            margin: 10,
+            height: height * 0.1,
+            borderColor: 'black',
+            borderWidth: 1,
+            borderRadius: 25,
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: mode == 1 ? '#8c77ed' : 'lightgray',
+          }}
+          onPress={() => {
+            setMode(1);
+          }}>
           <View>
-            <MaterialCommunityIcons name="robot-happy" style={{ fontSize: 30, color: "black" }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: width * 0.35 }}>
-              <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Talk To Chatbot</Text>
-              <AntDesignIcon name="arrowright" style={{ fontSize: 15, color: "black" }} />
+            <MaterialCommunityIcons
+              name="robot-happy"
+              style={{fontSize: 30, color: 'black'}}
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: width * 0.35,
+              }}>
+              <Text style={{fontSize: 13, fontWeight: 'bold'}}>
+                Talk To Chatbot
+              </Text>
+              <AntDesignIcon
+                name="arrowright"
+                style={{fontSize: 15, color: 'black'}}
+              />
             </View>
-
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={{ margin: 10, height: height * 0.1, borderColor: "black", borderWidth: 1, borderRadius: 25, flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: mode == 2 ? "#9ef0c3" : "lightgray" }} onPress={() => { setMode(2) }}>
+        <TouchableOpacity
+          style={{
+            margin: 10,
+            height: height * 0.1,
+            borderColor: 'black',
+            borderWidth: 1,
+            borderRadius: 25,
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: mode == 2 ? '#9ef0c3' : 'lightgray',
+          }}
+          onPress={() => {
+            setMode(2);
+          }}>
           <View>
-            <MaterialIcons name="question-answer" style={{ fontSize: 30, color: "black" }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: width * 0.35 }}>
-              <Text style={{ fontSize: 13, fontWeight: 'bold' }}>Talk About Doc</Text>
-              <AntDesignIcon name="arrowright" style={{ fontSize: 15, color: "black" }} />
+            <MaterialIcons
+              name="question-answer"
+              style={{fontSize: 30, color: 'black'}}
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: width * 0.35,
+              }}>
+              <Text style={{fontSize: 13, fontWeight: 'bold'}}>
+                Talk About Doc
+              </Text>
+              <AntDesignIcon
+                name="arrowright"
+                style={{fontSize: 15, color: 'black'}}
+              />
             </View>
           </View>
         </TouchableOpacity>
@@ -700,42 +784,34 @@ const Chatbot = ({ UpdateUserState }) => {
         }}>
         {items.length > 0 ? (
           Platform.OS == 'ios' ? (
+            <></>
+          ) : (
             <Picker
-              containerStyle={{ height: 100, borderWidth: 0, width: width - 20 }}
-              style={{ height: 60, width: width - 20 }}
-              open={open}
-              value={value}
-              items={items}
-              setOpen={setOpen}
-              setValue={setValue}
-              // onChangeValue={(value) => {
-              //     handleChange(value);
-              // }}
-              theme="DARK"
-              multiple={false}
-            />) : (
-            <Picker
-              style={{ width: width * 0.95 }}
+              style={{width: width * 0.95}}
               selectedValue={value}
               onValueChange={(itemValue, itemIndex) => {
-                setValue(itemValue + "")
-              }
-              }>
-              {
-                items.map((item, index) => {
-                  return (
-                    <Picker.Item label={item.label} value={item.id} key={index} enabled={index == 0 ? false : true} />
-                  )
-                })
-              }
+                setValue(itemValue + '');
+              }}>
+              {items.map((item, index) => {
+                return (
+                  <Picker.Item
+                    label={item.label}
+                    value={item.id}
+                    key={index}
+                    enabled={index == 0 ? false : true}
+                  />
+                );
+              })}
             </Picker>
           )
-        ) : (<></>)}
+        ) : (
+          <></>
+        )}
       </View>
       <ScrollView
         ref={scrollViewRef}
         onContentSizeChange={() =>
-          scrollViewRef.current.scrollToEnd({ animated: true })
+          scrollViewRef.current.scrollToEnd({animated: true})
         }
         style={{
           zIndex: 0,
@@ -745,7 +821,7 @@ const Chatbot = ({ UpdateUserState }) => {
           width: width - 20,
           borderRadius: 10,
         }}>
-        <View style={{ padding: 10 }}>
+        <View style={{padding: 10}}>
           {mode == 1 ? normalChat() : chatDoc()}
         </View>
       </ScrollView>
@@ -763,35 +839,65 @@ const Chatbot = ({ UpdateUserState }) => {
           {loading ? (
             <ActivityIndicator size="small" />
           ) : (
-            <MaterialCommunityIcons name="account-question" size={20} color="white" />
+            <MaterialCommunityIcons
+              name="account-question"
+              size={20}
+              color="white"
+            />
           )}
         </TouchableOpacity>
       </View>
       {/* Overlay area */}
       <Overlay
         isVisible={isCreateChatOverlayShow}
-        onBackdropPress={() => { setIsCreateChatOverlayShow(false) }}
-      >
+        onBackdropPress={() => {
+          setIsCreateChatOverlayShow(false);
+        }}>
         <Text style={styles.ItemName}>Create Chat</Text>
         <SafeAreaView style={styles.ToolsOverlayItems}>
-          <Text style={{ margin: 10 }}>Please enter the chat name</Text>
+          <Text style={{margin: 10}}>Please enter the chat name</Text>
           <TextInput
             onChangeText={setNewChatName}
             value={newChatName}
             placeholder="Chat Name"
-            style={{ padding: 10, borderWidth: 1, borderRadius: 5, width: "100%" }}
+            style={{
+              padding: 10,
+              borderWidth: 1,
+              borderRadius: 5,
+              width: '100%',
+            }}
           />
         </SafeAreaView>
-        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: "center", }}>
-          <TouchableOpacity style={{ margin: 2, padding: 10, borderRadius: 15 }} onPress={() => { setIsCreateChatOverlayShow(false); setNewChatName("") }}>
-            <Text style={{ color: "black", fontWeight: "bold" }}>Cancel</Text>
+        <SafeAreaView
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+          }}>
+          <TouchableOpacity
+            style={{margin: 2, padding: 10, borderRadius: 15}}
+            onPress={() => {
+              setIsCreateChatOverlayShow(false);
+              setNewChatName('');
+            }}>
+            <Text style={{color: 'black', fontWeight: 'bold'}}>Cancel</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ margin: 2, padding: 10, borderRadius: 15, backgroundColor: "green" }} onPress={() => { create_chat(newChatName); setIsCreateChatOverlayShow(false); }}>
-            <Text style={{ color: "white", fontWeight: "bold" }}>Create</Text>
+          <TouchableOpacity
+            style={{
+              margin: 2,
+              padding: 10,
+              borderRadius: 15,
+              backgroundColor: 'green',
+            }}
+            onPress={() => {
+              create_chat(newChatName);
+              setIsCreateChatOverlayShow(false);
+            }}>
+            <Text style={{color: 'white', fontWeight: 'bold'}}>Create</Text>
           </TouchableOpacity>
         </SafeAreaView>
       </Overlay>
-    </View >
+    </View>
   );
 };
 
