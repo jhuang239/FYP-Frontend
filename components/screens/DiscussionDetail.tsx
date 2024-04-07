@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Dimensions, Image, Platform } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Dimensions, Image, Platform, Modal } from "react-native";
 import React from "react";
 import IMAGES from "../images";
 import EntypoIcon from "react-native-vector-icons/Entypo";
@@ -8,10 +8,17 @@ import IoniconsIcon from "react-native-vector-icons/Ionicons";
 import FeatherIcon from "react-native-vector-icons/Feather";
 import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-
-
+import DocumentPicker, {
+    DirectoryPickerResponse,
+    DocumentPickerResponse,
+    isCancel,
+    isInProgress,
+    types,
+} from 'react-native-document-picker';
+import RNFS from 'react-native-fs';
 
 
 const width = Dimensions.get('window').width;
@@ -82,6 +89,11 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: "black",
     },
+    paperClipButton: {
+        margin: 5,
+        fontSize: 20,
+        color: "black",
+    },
     ItemName: {
         fontSize: 16,
         margin: 5,
@@ -102,6 +114,37 @@ const styles = StyleSheet.create({
         padding: 20,
         margin: 20,
         width: width * 0.5,
+    },
+    modalContainer: {
+        margin: 20,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalText: {
+        fontSize: 25,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    modalButton: {
+        backgroundColor: '#21201d',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 })
 
@@ -135,6 +178,13 @@ export default function DiscussionDetail({ route }) {
     const [userInput, setUserInput] = React.useState("");
     const navigation = useNavigation();
 
+    const [results, setResult] = React.useState<
+        Array<DocumentPickerResponse>
+    >([]);
+
+    const [message, setMessage] = React.useState("");
+    const [isMessageModalVisible, setIsMessageModalVisible] = React.useState(false);
+
     const goToBack = () => {
         navigation.goBack();
     };
@@ -143,11 +193,15 @@ export default function DiscussionDetail({ route }) {
     }
 
     const goToPdfViewer = (fileDetail: any) => {
-        console.log(fileDetail)
         fileDetail = { ...fileDetail, oldName: fileDetail.file_name }
 
         navigation.navigate('PdfViewer', { fileDetail });
     };
+
+    const goToPdfPreViewer = (file: any) => {
+        console.log(file)
+        navigation.navigate('PdfPreViewer', { fileDetail: file });
+    }
 
     const sendComment = async () => {
         try {
@@ -159,21 +213,62 @@ export default function DiscussionDetail({ route }) {
             });
             if (userinfo == null) return;
 
-            const response = await axios.post(`http://3.26.57.153:8000/comments/add_comment`,
-                {
-                    discussion_id: details.id,
-                    detail: userInput
+            const formData = new FormData();
+            formData.append('data', JSON.stringify({ discussion_id: details.id, detail: userInput }))
+            if (results.length > 0) {
+                await sendCommentFile()
+                return;
+            }
+
+            const response = await fetch(`http://3.26.57.153:8000/comments/add_comment_xfile`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${userinfo.token}`,
-                    },
-                });
+            });
             // Handle response
             scrollViewRef.current.scrollToEnd({ animated: true });
             setUserInput("")
+            setResult([])
+            setMessage("Comment Sent")
             await fetchDiscussion();
+            setIsMessageModalVisible(true)
+        } catch (error) {
+            console.log("Error sendComment:" + error);
+        }
+    }
 
+    const sendCommentFile = async () => {
+        try {
+            if (userInput == "") return
+            const userinfo = await AsyncStorage.getItem('userData').then(value => {
+                if (value) {
+                    return JSON.parse(value);
+                }
+            });
+            if (userinfo == null) return;
+
+            const formData = new FormData();
+            formData.append('data', JSON.stringify({ discussion_id: details.id, detail: userInput }))
+            for (const file of results) {
+                formData.append('files', file, file.name);
+            }
+
+            const response = await fetch(`http://3.26.57.153:8000/comments/add_comment`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${userinfo.token}`,
+                },
+            });
+            // Handle response
+            scrollViewRef.current.scrollToEnd({ animated: true });
+            setUserInput("")
+            setResult([])
+            setMessage("Comment Sent")
+            await fetchDiscussion();
+            setIsMessageModalVisible(true)
         } catch (error) {
             console.log("Error sendComment:" + error);
         }
@@ -233,6 +328,25 @@ export default function DiscussionDetail({ route }) {
         }
     }
 
+    const handleError = (err: unknown) => {
+        setIsMessageModalVisible(true);
+        if (isCancel(err)) {
+            setMessage('User cancelled the picker');
+            console.warn('User cancelled the picker');
+        } else if (isInProgress(err)) {
+            setMessage('Picker is still in progress');
+            console.warn('Picker is still in progress');
+        } else {
+            setMessage(String(err));
+            throw err;
+        }
+    };
+
+    const handleCross = (file: any) => {
+        const newFiles = results.filter(item => item.fileCopyUri !== file.fileCopyUri)
+        setResult(newFiles)
+    }
+
     React.useEffect(() => {
         fetchDiscussion();
 
@@ -242,6 +356,15 @@ export default function DiscussionDetail({ route }) {
 
         return () => clearInterval(interval);
     }, []);
+
+    React.useEffect(() => {
+        console.log(JSON.stringify(results));
+        if (results.length > 0) {
+            for (var result of results) {
+                RNFS.readFile(result.fileCopyUri, 'base64')
+            }
+        }
+    }, [results]);
 
     return (
         <View style={styles.container}>
@@ -265,7 +388,7 @@ export default function DiscussionDetail({ route }) {
                     onContentSizeChange={() =>
                         scrollViewRef.current.scrollToEnd({ animated: true })
                     }
-                    style={{ marginBottom: 100, height: height * 0.3 }}>
+                    style={{ marginBottom: results.length > 0 ? 130 : 100, height: height * 0.3 }}>
                     <View style={{ marginHorizontal: 10, marginBottom: 30, paddingBottom: 30, borderBottomColor: 'gray', borderBottomWidth: 1 }}>
                         <View style={{
                             flexDirection: 'row',
@@ -348,37 +471,71 @@ export default function DiscussionDetail({ route }) {
                             data.comments.length > 0 ? (
                                 data.comments.map((comment, index) => {
                                     return (
-                                        <View key={index} style={{
-                                            flexDirection: 'row',
-                                            justifyContent: 'flex-start',
-                                            alignItems: "center",
-                                            margin: 10,
-                                            marginTop: 0,
+                                        <View style={{
                                             borderBottomColor: 'gray',
                                             borderBottomWidth: (index == data.comments.length - 1 ? 0 : 0.5)
                                         }}>
-                                            <Image
-                                                source={IMAGES.USER}
-                                                style={{
-                                                    height: 50,
-                                                    width: 50,
-                                                    aspectRatio: 1,
-                                                    borderRadius: 25
-                                                }}
-                                            />
+                                            <View key={index} style={{
+                                                flexDirection: 'row',
+                                                justifyContent: 'flex-start',
+                                                alignItems: "center",
+                                                margin: 10,
+                                                marginTop: 0,
+                                                marginBottom: 5
+                                            }}>
+                                                <Image
+                                                    source={IMAGES.USER}
+                                                    style={{
+                                                        height: 50,
+                                                        width: 50,
+                                                        aspectRatio: 1,
+                                                        borderRadius: 25
+                                                    }}
+                                                />
+                                                <View style={{
+                                                    flex: 1,
+                                                    flexDirection: 'row',
+                                                    justifyContent: 'space-between',
+                                                    margin: 10,
+                                                }}>
+                                                    <View style={{
+                                                        justifyContent: 'flex-start',
+                                                    }}>
+                                                        <Text style={{ fontSize: 13 }}>{comment.author}</Text>
+                                                        <Text style={{ marginVertical: 10, fontSize: 15, color: "black" }}>{comment.detail}</Text>
+                                                    </View>
+                                                    <Text style={{ fontSize: 13 }}>{new Date(comment.created_at).toLocaleString()}</Text>
+                                                </View>
+                                            </View>
                                             <View style={{
                                                 flex: 1,
-                                                flexDirection: 'row',
+                                                flexDirection: 'column',
                                                 justifyContent: 'space-between',
-                                                margin: 10,
+                                                marginLeft: 10,
+                                                paddingBottom: 10
                                             }}>
-                                                <View style={{
-                                                    justifyContent: 'flex-start',
-                                                }}>
-                                                    <Text style={{ fontSize: 13 }}>{comment.author}</Text>
-                                                    <Text style={{ fontSize: 15, color: "black" }}>{comment.detail}</Text>
-                                                </View>
-                                                <Text style={{ fontSize: 13 }}>{new Date(comment.created_at).toLocaleString()}</Text>
+                                                {
+                                                    comment.files.length > 0 ? (
+                                                        <Text>Refer To:</Text>
+                                                    ) : (<></>)
+                                                }
+                                                {
+                                                    comment.files.length > 0 ?
+                                                        comment.files.map((doc: any) => {
+                                                            return (
+                                                                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
+                                                                    <TouchableOpacity onPress={() => { goToPdfViewer(doc) }} style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
+                                                                        <AntDesignIcon name="pdffile1" style={{
+                                                                            fontSize: 10,
+                                                                            color: "black",
+                                                                        }} />
+                                                                        <Text>  {doc.file_name.substring(doc.file_name.indexOf("_") + 1)}</Text>
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            )
+                                                        })
+                                                        : (<></>)
+                                                }
                                             </View>
                                         </View>
                                     )
@@ -391,7 +548,7 @@ export default function DiscussionDetail({ route }) {
                         }
                     </View>
                 </ScrollView>
-                <View style={styles.replyContainer}>
+                <View style={{ ...styles.replyContainer, height: results.length > 0 ? 130 : 100 }}>
                     <View style={{
                         flexDirection: 'row',
                         justifyContent: 'flex-start',
@@ -411,6 +568,37 @@ export default function DiscussionDetail({ route }) {
                         <View style={{ flex: 1 }}>
                             <View style={{
                                 flexDirection: 'row',
+                                justifyContent: 'flex-start',
+                                alignItems: "center",
+                                marginTop: 5,
+                                paddingLeft: 10,
+                            }}>
+                                {results.length > 0 ? (
+                                    <View style={{ borderWidth: 1, borderRadius: 25, borderColor: "gray", padding: 7, paddingHorizontal: 10 }}>
+                                        {
+                                            results.map((item, index) => {
+                                                return (
+                                                    <View style={{
+                                                        flexDirection: 'row',
+                                                        justifyContent: 'space-evenly',
+                                                        alignItems: "center",
+                                                    }}>
+                                                        <TouchableOpacity key={index} onPress={() => { goToPdfPreViewer(item) }}>
+                                                            <Text>{item.name}</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity
+                                                            onPress={() => handleCross(item)}>
+                                                            <Text style={{}}>   ✖ </Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                )
+                                            })
+                                        }
+                                    </View>
+                                ) : (<></>)}
+                            </View>
+                            <View style={{
+                                flexDirection: 'row',
                                 justifyContent: 'space-between',
                                 alignItems: "center",
                             }}>
@@ -418,10 +606,25 @@ export default function DiscussionDetail({ route }) {
                                     placeholder="Give a reply"
                                     multiline
                                     numberOfLines={3}
-                                    style={{ borderWidth: 1, borderColor: 'gray', borderRadius: 20, paddingHorizontal: 7, flex: 1, margin: 10 }}
+                                    style={{ borderWidth: 1, borderColor: 'gray', borderRadius: 20, paddingRight: 40, paddingHorizontal: 7, flex: 1, margin: 10 }}
                                     onChangeText={onChangeText}
                                     value={userInput}
                                 />
+                                <View style={{ position: "absolute", right: 45 }}>
+                                    <MaterialCommunityIcons
+                                        name="paperclip"
+                                        style={styles.paperClipButton}
+                                        onPress={() => {
+                                            DocumentPicker.pick({
+                                                allowMultiSelection: false,
+                                                type: [DocumentPicker.types.pdf],
+                                                copyTo: 'cachesDirectory',
+                                            })
+                                                .then(setResult)
+                                                .catch(handleError);
+                                        }}
+                                    />
+                                </View>
                                 <IoniconsIcon
                                     name="send"
                                     style={styles.sendButton}
@@ -449,6 +652,21 @@ export default function DiscussionDetail({ route }) {
                     <Text style={{ color: "black" }}>Bookmark</Text>
                 </TouchableOpacity>
             </Overlay >
+
+            {/* Here is the modal */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isMessageModalVisible}>
+                <View style={styles.modalContainer}>
+                    <Text style={styles.modalText}>{message}</Text>
+                    <TouchableOpacity
+                        style={styles.modalButton}
+                        onPress={() => setIsMessageModalVisible(false)}>
+                        <Text style={styles.modalButtonText}>OK</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
         </View>
     )
 }

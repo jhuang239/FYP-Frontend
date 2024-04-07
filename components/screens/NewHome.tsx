@@ -14,7 +14,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import IoniconsIcon from 'react-native-vector-icons/Ionicons';
 import IMAGES from '../images';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Avatar} from 'react-native-elements';
+import { Avatar } from 'react-native-elements';
 import {
   useNavigation,
   NavigationProp,
@@ -92,7 +92,7 @@ type HomeProps = {
   UpdateUserState(user: any): void;
 };
 
-export default function NewHome({UpdateUserState}) {
+export default function NewHome({ UpdateUserState }) {
   const [items, setItems] = React.useState([]);
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -107,7 +107,7 @@ export default function NewHome({UpdateUserState}) {
 
   const goToQuestionAnswerPage = (item: any) => {
     console.log(item);
-    navigation.navigate('QuestionAnswer', {item});
+    navigation.navigate('QuestionAnswer', { item });
   };
 
   const Logout = async () => {
@@ -181,11 +181,11 @@ export default function NewHome({UpdateUserState}) {
           data={images}
           scrollAnimationDuration={10000}
           snapEnabled={true}
-          renderItem={({index}) => (
+          renderItem={({ index }) => (
             <View style={styles.container}>
               <Image
                 source={images[index]}
-                style={{width: width - 20, height: 250, borderRadius: 10}}
+                style={{ width: width - 20, height: 250, borderRadius: 10 }}
               />
             </View>
           )}
@@ -205,17 +205,19 @@ export default function NewHome({UpdateUserState}) {
         <ScrollView
           style={{
             marginHorizontal: 10,
-            height: Platform.OS == 'ios' ? height * 0.46 : height * 0.4,
+            height: Platform.OS == 'ios' ? height * 0.4 : height * 0.46,
             paddingBottom: 20,
-          }}>
+          }}
+          showsVerticalScrollIndicator={false}
+        >
           <FlatList
             data={items}
             numColumns={2}
             keyExtractor={item => item.quiz_id}
             showsVerticalScrollIndicator={false}
-            columnWrapperStyle={{justifyContent: 'flex-start'}}
+            columnWrapperStyle={{ justifyContent: 'flex-start' }}
             style={styles.flatList}
-            renderItem={({item}) => {
+            renderItem={({ item }) => {
               return (
                 <TouchableOpacity
                   onPress={() => goToQuestionAnswerPage(item)}

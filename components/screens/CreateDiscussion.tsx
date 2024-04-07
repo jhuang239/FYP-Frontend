@@ -222,8 +222,6 @@ export default function CreateDiscussion() {
                 console.log(data);
                 setModalMessage("Creation Success")
             }
-            const data = await response.json();
-            console.log(data);
         } catch (error) {
             console.log("Error sendComment:" + error);
             setModalMessage("Creation Failed: " + error)

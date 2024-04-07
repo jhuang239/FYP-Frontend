@@ -216,9 +216,12 @@ export default function Discussion({ UpdateUserState }) {
                     showLoading={isSearchLoading}
                 />
                 <FlatList
-                    data={data.filter((item, index, self) => {
-                        return self.findIndex((t) => t.category === item.category) === index;
-                    }).map(item => item.category)}
+                    data={
+                        data.length > 0 ? (
+                            data.filter((item, index, self) => {
+                                return self.findIndex((t) => t.category === item.category) === index;
+                            }).map(item => item.category)) : (data)
+                    }
                     horizontal={true}
                     contentContainerStyle={{ height: 40 }}
                     keyExtractor={(item, index) => Math.random().toString()}
@@ -233,9 +236,12 @@ export default function Discussion({ UpdateUserState }) {
                 />
             </View>
             <FlatList
-                data={data.filter((item) =>
-                    item.category.toLowerCase().includes(selectedTag.toLowerCase())
-                )}
+                data={
+                    data.length > 0 ? (
+                        data.filter((item) =>
+                            item.category.toLowerCase().includes(selectedTag.toLowerCase())
+                        )) : (data)
+                }
                 contentContainerStyle={{ flex: 1 }}
                 keyExtractor={(item, index) => item.id + ''}
                 showsVerticalScrollIndicator={false}
