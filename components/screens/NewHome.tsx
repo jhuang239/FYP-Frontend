@@ -7,6 +7,7 @@ import {
   Dimensions,
   FlatList,
   Platform,
+  ScrollView,
 } from 'react-native';
 import React from 'react';
 import Carousel from 'react-native-reanimated-carousel';
@@ -44,8 +45,8 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   logoutButton: {
-    padding: 2,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     backgroundColor: 'white',
     borderWidth: 1,
     borderColor: 'gray',
@@ -201,11 +202,11 @@ export default function NewHome({UpdateUserState}) {
             <Text>Request for more</Text>
           </TouchableOpacity>
         </View>
-        <View
+        <ScrollView
           style={{
-            justifyContent: 'space-between',
             marginHorizontal: 10,
-            height: Platform.OS == 'ios' ? height * 0.46 : height * 0.42,
+            height: Platform.OS == 'ios' ? height * 0.46 : height * 0.4,
+            paddingBottom: 20,
           }}>
           <FlatList
             data={items}
@@ -245,7 +246,7 @@ export default function NewHome({UpdateUserState}) {
               );
             }}
           />
-        </View>
+        </ScrollView>
       </View>
     </View>
   );
